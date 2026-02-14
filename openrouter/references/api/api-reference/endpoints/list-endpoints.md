@@ -1,54 +1,105 @@
 # List All Endpoints for a Model
 
-## API Endpoint
+`GET https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints`
 
-```
-GET https://openrouter.ai/api/v1/models/{author}/{slug}/endpoints
-```
+Retrieves all available endpoints for a specific model, identified by the author and slug parameters.
 
-## Overview
+## Request
 
-This endpoint retrieves all available endpoints for a specific model, identified by the author and slug parameters.
+### Path Parameters
 
-## Request Parameters
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| author | string | Yes | Model author identifier |
+| slug | string | Yes | Model slug identifier |
 
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| author | path | string | Yes | Model author identifier |
-| slug | path | string | Yes | Model slug identifier |
-| Authorization | header | string | Yes | "API key as bearer token in Authorization header" |
+### Headers
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| Authorization | string | Yes | API key as bearer token in Authorization header |
 
 ## Response
 
-### Success (200)
+### Status Codes
 
-Returns a model object containing:
+| Code | Description |
+|------|-------------|
+| 200 | Returns a list of endpoints |
+| 404 | Not Found - Model does not exist |
+| 500 | Internal Server Error - Unexpected server error |
 
-- **id**: Unique model identifier
-- **name**: Display name
-- **created**: Unix timestamp
-- **description**: Model description
-- **architecture**: Technical specifications including tokenizer, instruction type, and supported modalities
-- **endpoints**: Array of available endpoints with pricing, provider details, and performance metrics
+### Response Schema (200)
 
-### Error Responses
+The response contains model metadata and available endpoints:
 
-- **404**: Model does not exist
-- **500**: Unexpected server error
+```json
+{
+  "id": "string",
+  "name": "string",
+  "created": 0,
+  "description": "string",
+  "architecture": {
+    "tokenizer": "string",
+    "instruct_type": "string",
+    "modality": "string",
+    "input_modalities": [],
+    "output_modalities": []
+  },
+  "endpoints": []
+}
+```
+
+### Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique model identifier |
+| name | string | Display name |
+| created | number | Unix timestamp |
+| description | string | Model description |
+| architecture | object | Technical specifications including tokenizer, instruct_type, modality, input_modalities, output_modalities |
+| endpoints | PublicEndpoint[] | Array of available endpoints (see below) |
+
+### PublicEndpoint Object
+
+| Field | Type | Description |
+|-------|------|-------------|
+| name | string | Endpoint name |
+| model_id | string | Unique model identifier (permaslug) |
+| model_name | string | Human-readable model name |
+| context_length | number | Maximum context window size |
+| pricing | object | Pricing details for various operations |
+| provider_name | string | Service provider name |
+| tag | string | Classification tag |
+| quantization | object | Model quantization details |
+| max_completion_tokens | number \| null | Maximum output tokens |
+| max_prompt_tokens | number \| null | Maximum input tokens |
+| supported_parameters | array | List of supported API parameters |
+| status | string | Current endpoint status |
+| uptime_last_30m | number \| null | Uptime percentage over 30 minutes |
+| supports_implicit_caching | boolean | Caching capability |
+| latency_last_30m | object | Latency percentiles (p50, p75, p90, p99) |
+| throughput_last_30m | object | Throughput metrics over 30 minutes (p50, p75, p90, p99) |
 
 ## Code Examples
 
 ### Python
+
 ```python
 import requests
 
 url = "https://openrouter.ai/api/v1/models/author/slug/endpoints"
+
 headers = {"Authorization": "Bearer <token>"}
+
 response = requests.get(url, headers=headers)
+
 print(response.json())
 ```
 
 ### JavaScript
+
 ```javascript
 const url = 'https://openrouter.ai/api/v1/models/author/slug/endpoints';
 const options = {method: 'GET', headers: {Authorization: 'Bearer <token>'}};
@@ -63,6 +114,7 @@ try {
 ```
 
 ### Go
+
 ```go
 package main
 
@@ -73,32 +125,44 @@ import (
 )
 
 func main() {
+
 	url := "https://openrouter.ai/api/v1/models/author/slug/endpoints"
+
 	req, _ := http.NewRequest("GET", url, nil)
+
 	req.Header.Add("Authorization", "Bearer <token>")
+
 	res, _ := http.DefaultClient.Do(req)
+
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
+
 	fmt.Println(res)
 	fmt.Println(string(body))
+
 }
 ```
 
 ### Ruby
+
 ```ruby
 require 'uri'
 require 'net/http'
 
 url = URI("https://openrouter.ai/api/v1/models/author/slug/endpoints")
+
 http = Net::HTTP.new(url.host, url.port)
 http.use_ssl = true
+
 request = Net::HTTP::Get.new(url)
 request["Authorization"] = 'Bearer <token>'
+
 response = http.request(request)
 puts response.read_body
 ```
 
 ### Java
+
 ```java
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -109,11 +173,13 @@ HttpResponse<String> response = Unirest.get("https://openrouter.ai/api/v1/models
 ```
 
 ### PHP
+
 ```php
 <?php
 require_once('vendor/autoload.php');
 
 $client = new \GuzzleHttp\Client();
+
 $response = $client->request('GET', 'https://openrouter.ai/api/v1/models/author/slug/endpoints', [
   'headers' => [
     'Authorization' => 'Bearer <token>',
@@ -124,6 +190,7 @@ echo $response->getBody();
 ```
 
 ### C#
+
 ```csharp
 using RestSharp;
 
@@ -134,10 +201,12 @@ IRestResponse response = client.Execute(request);
 ```
 
 ### Swift
+
 ```swift
 import Foundation
 
 let headers = ["Authorization": "Bearer <token>"]
+
 let request = NSMutableURLRequest(url: NSURL(string: "https://openrouter.ai/api/v1/models/author/slug/endpoints")! as URL,
                                         cachePolicy: .useProtocolCachePolicy,
                                     timeoutInterval: 10.0)

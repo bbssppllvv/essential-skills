@@ -1,29 +1,124 @@
-# User Tracking Documentation
+# User Tracking
 
-## Overview
+Track Your Users with OpenRouter
 
-OpenRouter provides a user tracking feature through an optional `user` parameter in API requests. This allows developers to identify their end-users and gain performance and analytics benefits.
+---
 
-## Core Functionality
+OpenRouter's user tracking feature allows you to monitor your end-users through an optional `user` parameter in API requests. The parameter accepts any string identifier that represents your end-user, such as user IDs, email hashes, or session identifiers.
 
-The `user` parameter accepts any string identifier representing your application's end-user. As the documentation states, this could be "a user ID, email hash, session identifier, or any other stable identifier" used in your system.
+## Benefits
 
-## Primary Benefits
+### Improved Caching
 
-**Caching Optimization**: When you consistently use the same user identifier, OpenRouter can implement "sticky" caching that keeps individual users routed to the same provider, maintaining warm caches while allowing load distribution across different providers for separate users.
+OpenRouter can make caches sticky to your individual users, improving load-balancing and throughput. A given user of your application will always get routed to the same provider and the cache will stay warm, while separate users distribute across providers for improved throughput.
 
-**Analytics Access**: User identifiers appear in the activity dashboard, data exports, and the generations API, enabling detailed usage breakdown by individual user.
+### Enhanced Reporting
+
+The `user` parameter is available in:
+
+- The `/activity` page
+- The data exports from that page
+- The `/generations` API endpoint
+
+You can view requests broken down by user ID in your OpenRouter dashboard and understand which users are making the most requests through usage analytics.
 
 ## Implementation
 
-The feature is straightforward to implement across multiple SDKs:
+Simply include a `user` parameter in your API requests with any string identifier that represents your end-user.
 
-- **TypeScript SDK**: Include `user: 'user_12345'` in the request object
-- **Python/OpenAI SDK**: Pass `user="user_12345"` to the `chat.completions.create()` method
-- **TypeScript/OpenAI SDK**: Add `user: 'user_12345'` to completion parameters
+### Request Format
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [
+    {"role": "user", "content": "Hello, how are you?"}
+  ],
+  "user": "user_12345"
+}
+```
+
+### TypeScript SDK
+
+```typescript
+import { OpenRouter } from '@openrouter/sdk';
+
+const openRouter = new OpenRouter({
+  apiKey: '{{API_KEY_REF}}',
+});
+
+const response = await openRouter.chat.send({
+  model: '{{MODEL}}',
+  messages: [
+    {
+      role: 'user',
+      content: "What's the weather like today?",
+    },
+  ],
+  user: 'user_12345', // Your user identifier
+  stream: false,
+});
+
+console.log(response.choices[0].message.content);
+```
+
+### Python (OpenAI SDK)
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key="{{API_KEY_REF}}",
+)
+
+response = client.chat.completions.create(
+    model="{{MODEL}}",
+    messages=[
+        {"role": "user", "content": "What's the weather like today?"}
+    ],
+    user="user_12345",  # Your user identifier
+)
+
+print(response.choices[0].message.content)
+```
+
+### TypeScript (OpenAI SDK)
+
+```typescript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: '{{API_KEY_REF}}',
+});
+
+async function chatWithUserTracking() {
+  const response = await openai.chat.completions.create({
+    model: '{{MODEL}}',
+    messages: [
+      {
+        role: 'user',
+        content: "What's the weather like today?",
+      },
+    ],
+    user: 'user_12345', // Your user identifier
+  });
+
+  console.log(response.choices[0].message.content);
+}
+
+chatWithUserTracking();
+```
 
 ## Best Practices
 
-1. **Maintain consistency**: Use the same identifier format throughout your application
-2. **Choose stable identifiers**: Avoid random strings that vary between requests
-3. **Protect privacy**: Use internal IDs rather than personal information in identifiers
+- **Use consistent, stable identifiers** for the same user across requests. This ensures caching and analytics work properly.
+- **Avoid random strings** that change between requests. Changing identifiers defeats the purpose of user tracking.
+- **Do not include personally identifiable information** (PII) directly. Use internal user IDs rather than exposing personal information like email addresses or names.
+
+## Related Documentation
+
+- [Usage Accounting](/docs/guides/guides/usage-accounting) - Track token usage and costs
+- [Activity Export](/docs/guides/guides/activity-export) - Export usage data
+- [App Attribution](/docs/app-attribution) - App-level analytics

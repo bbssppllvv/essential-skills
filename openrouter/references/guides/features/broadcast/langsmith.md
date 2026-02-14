@@ -1,55 +1,90 @@
-# LangSmith Integration Guide
+---
+title: Broadcast to LangSmith
+description: Send OpenRouter traces to LangSmith for LLM observability
+---
 
-## Overview
+# Broadcast to LangSmith
 
-LangSmith is "LangChain's platform for debugging, testing, evaluating, and monitoring LLM applications." This integration enables automatic trace transmission from OpenRouter to LangSmith.
+LangSmith is LangChain's platform for debugging, testing, evaluating, and monitoring LLM applications. With OpenRouter's Broadcast feature, traces are automatically sent to LangSmith without additional instrumentation.
 
-## Setup Instructions
+## Setup
 
-### Step 1: Obtain Credentials
-Access LangSmith's **Settings > API Keys** to generate an API key, then locate your project name or establish a new project.
+### Step 1: Get Your LangSmith Credentials
 
-### Step 2: Enable Broadcast Feature
-Navigate to OpenRouter's **Settings > Observability** and activate the Broadcast toggle.
+Obtain your API key from LangSmith's **Settings > API Keys** section. The key format is `lsv2_pt_...`. Also note your project name from your LangSmith workspace.
 
-### Step 3: Configure LangSmith Connection
-Select the edit option adjacent to LangSmith and input:
+### Step 2: Enable Broadcast
+
+Navigate to **Settings > Observability** in OpenRouter and activate the Broadcast feature.
+
+### Step 3: Configure LangSmith Destination
+
+Add LangSmith as a destination and provide:
+
 - **Api Key**: Your LangSmith API key (format: `lsv2_pt_...`)
-- **Project**: Your selected project name
-- **Endpoint** (optional): Defaults to `https://api.smith.langchain.com` for self-hosted alternatives
+- **Project**: Your LangSmith project name
+- **Endpoint** (optional): Defaults to `https://api.smith.langchain.com`. Update for self-hosted instances.
 
-### Step 4: Verify Configuration
-Execute the **Test Connection** feature to confirm proper setup. Configuration persists only upon successful testing.
+### Step 4: Test Connection
 
-### Step 5: Transmit Test Trace
-Submit an API request via OpenRouter and examine the resulting trace in LangSmith. Traces include comprehensive data encompassing messages, token metrics, expenses, model details, and performance measurements.
+Click **Test Connection** to verify the setup. Configuration saves only upon successful validation.
+
+### Step 5: Verify Traces
+
+Send an API request through OpenRouter and confirm the trace appears in LangSmith. Traces include comprehensive data encompassing messages, token metrics, costs, model details, and performance measurements.
 
 ## Data Transmission
 
-OpenRouter utilizes the OpenTelemetry (OTEL) protocol to transmit traces featuring:
-- GenAI semantic conventions (model identifiers, token metrics, expenses)
-- LangSmith-specific attributes (trace naming, span classification, user identifiers)
-- Error documentation with exception details when failures occur
+OpenRouter communicates with LangSmith via the OpenTelemetry (OTEL) protocol, including:
 
-## Custom Metadata Framework
+- **GenAI semantic conventions**: Model identifiers, token metrics, pricing details, and request parameters
+- **LangSmith-specific attributes**: Trace identifiers, span classifications, and user information
+- **Error events**: Exception classification and diagnostic messages when requests fail
 
-### Supported Metadata Mapping
+## Custom Metadata
 
-| Metadata Key      | LangSmith Destination | Purpose                          |
-|-------------------|----------------------|----------------------------------|
-| `trace_id`        | Trace ID             | Consolidate runs into single trace |
-| `trace_name`      | Run Name             | Display name in trace inventory  |
-| `span_name`       | Run Name             | Intermediate operation naming    |
-| `generation_name` | Run Name             | LLM operation identifier        |
-| `parent_span_id`  | Parent Run ID        | Hierarchical trace linking      |
+Enrich your traces with custom metadata by including the `trace` field in your API requests:
 
-String arrays in metadata function as filterable tags. The `user` field corresponds to LangSmith's User ID, while `session_id` enables conversation monitoring.
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [{ "role": "user", "content": "Analyze this text..." }],
+  "user": "user_12345",
+  "session_id": "session_abc",
+  "trace": {
+    "trace_id": "analysis_workflow_123",
+    "trace_name": "Text Analysis Pipeline",
+    "span_name": "Sentiment Analysis",
+    "generation_name": "Extract Sentiment",
+    "environment": "production",
+    "team": "nlp-team"
+  }
+}
+```
+
+### Metadata Mapping
+
+| Key | LangSmith Mapping | Description |
+|---|---|---|
+| `trace_id` | Trace ID | Group multiple runs into a single trace |
+| `trace_name` | Run Name | Custom name displayed in the LangSmith trace list |
+| `span_name` | Run Name | Name for intermediate chain/tool runs |
+| `generation_name` | Run Name | Name for the LLM run |
+| `parent_span_id` | Parent Run ID | Link to an existing run in your trace hierarchy |
+
+### Additional Context Fields
+
+- The `user` field maps to LangSmith **User ID** for user tracking
+- The `session_id` field maps to LangSmith **Session ID** for conversation tracking
+- String arrays in metadata function as filterable tags
+- Extra metadata keys within `trace` are available for filtering in LangSmith
 
 ### Run Type Mapping
-- **GENERATION** → `llm` classification
-- **SPAN** → `chain` classification
-- **EVENT** → `tool` classification
 
-## Privacy Considerations
+- **GENERATION** maps to `llm` classification
+- **SPAN** maps to `chain` classification
+- **EVENT** maps to `tool` classification
 
-Enabling Privacy Mode excludes prompt and completion text from traces while maintaining transmission of token usage, expenses, timing information, model specifications, and custom attributes.
+## Privacy Mode
+
+When Privacy Mode is enabled for this destination, prompt and completion content is excluded from traces. Token usage, costs, timing, model information, and custom metadata remain transmitted.

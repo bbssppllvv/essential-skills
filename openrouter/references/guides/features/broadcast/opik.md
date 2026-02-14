@@ -1,41 +1,80 @@
-# Comet Opik Integration Guide
+# Broadcast to Comet Opik
 
-## Overview
-Comet Opik is "an open-source platform for evaluating, testing, and monitoring LLM applications." This documentation explains how to connect it with OpenRouter to automatically capture and analyze API request traces.
+[Comet Opik](https://www.comet.com/site/products/opik/) is an open-source platform for evaluating, testing, and monitoring LLM applications.
 
-## Setup Steps
+Connect Comet Opik to automatically receive traces from your OpenRouter requests.
 
-### Step 1: Obtain Opik Credentials
-Users must access their Comet account to establish an Opik workspace and project, then navigate to API settings to generate or retrieve their authentication key.
+## Setup
 
-### Step 2: Activate Broadcast Feature
-Navigate to the Observability settings section in OpenRouter and enable the broadcast functionality.
+### Step 1: Get your Opik credentials
 
-### Step 3: Configure Integration
-Click the edit option for Comet Opik and provide three pieces of information:
-- **Api Key**: Authentication credential (formatted as `opik_...`)
-- **Workspace**: Comet workspace identifier
-- **Project Name**: Destination project for trace logging
+Log in to Comet, create a workspace and project, then retrieve your API key from Settings > API Keys. The key starts with `opik_...`.
 
-### Step 4: Verify Configuration
-Test the connection to ensure all settings are correct; the system saves configuration only upon successful validation.
+### Step 2: Enable Broadcast in OpenRouter
 
-### Step 5: Validate with Test Request
-Send a request through OpenRouter and confirm the trace appears in the Opik dashboard.
+Go to [Settings > Observability](https://openrouter.ai/settings/observability) and toggle **Enable Broadcast**.
 
-## Custom Metadata Support
+### Step 3: Configure Comet Opik
 
-Comet Opik allows custom metadata on traces and spans. Supported fields include:
+Click the edit icon next to **Comet Opik** and enter:
 
-| Field | Maps To | Purpose |
-|-------|---------|---------|
-| `trace_id` | Trace metadata | Groups multiple requests |
-| `trace_name` | Trace Name | Custom display label |
-| `span_name` | Span Name | Intermediate span identifier |
-| `generation_name` | Span Name | LLM generation identifier |
+- **API Key**: Your Opik API key (starts with `opik_...`)
+- **Workspace**: Your Comet workspace name
+- **Project**: The project where traces will be stored
 
-### Metadata Example
-Custom metadata passes through request objects and gets attached to trace and span data. The system automatically includes cost metrics, model parameters, and finish reasons.
+### Step 4: Test and save
 
-## Privacy Considerations
-When privacy mode is enabled, "prompt and completion content is excluded from traces." Other data--usage statistics, costs, timing, and model details--remains transmitted normally.
+Click **Test Connection** to verify the setup. The configuration only saves if the test passes.
+
+### Step 5: Send a test trace
+
+Make an API request through OpenRouter and view the trace in the Opik dashboard.
+
+## Custom Metadata
+
+Opik allows custom metadata on traces and spans for organization and filtering.
+
+### Supported metadata keys
+
+| Key | Opik Mapping | Description |
+|-----|--------------|-------------|
+| `trace_id` | Trace metadata (`openrouter_trace_id`) | Group multiple requests into a single trace |
+| `trace_name` | Trace Name | Custom name displayed in the Opik trace list |
+| `span_name` | Span Name | Name for intermediate spans in the hierarchy |
+| `generation_name` | Span Name | Name for the LLM generation span |
+
+### Additional field mappings
+
+- The `user` field maps to user identification in trace metadata
+- OpenRouter IDs are stored as `openrouter_trace_id` and `openrouter_observation_id`
+- Custom metadata keys from the `trace` object are included in both trace and span metadata
+
+### Example
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [{ "role": "user", "content": "Evaluate this response..." }],
+  "user": "user_12345",
+  "session_id": "session_abc",
+  "trace": {
+    "trace_name": "Response Quality Eval",
+    "generation_name": "Quality Assessment",
+    "eval_suite": "quality_v2",
+    "test_case_id": "tc_001"
+  }
+}
+```
+
+## Data Transmitted
+
+The following data is automatically included in spans:
+
+- Cost information (input, output, total costs)
+- Model parameters (when available)
+- Finish reasons (when available)
+- Token usage metrics
+
+## Privacy Mode
+
+When Privacy Mode is enabled for this destination, prompt and completion content is excluded from traces. All other trace data -- token usage, costs, timing, model information, and custom metadata -- is still sent normally.

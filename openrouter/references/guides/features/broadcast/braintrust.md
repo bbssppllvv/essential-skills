@@ -1,44 +1,83 @@
-# Braintrust Broadcast Integration
+# Broadcast to Braintrust
 
-## Overview
+[Braintrust](https://www.braintrust.dev) is an end-to-end platform for evaluating, monitoring, and improving LLM applications.
 
-"Braintrust is an end-to-end platform for evaluating, monitoring, and improving LLM applications." This integration enables automatic trace transmission from OpenRouter requests to Braintrust.
+Connect Braintrust to automatically receive traces from your OpenRouter requests.
 
-## Setup Instructions
+## Setup
 
-### Step 1: Obtain Credentials
-Access Braintrust's Account Settings to generate an API key and locate your Project ID within project settings.
+### Step 1: Get your Braintrust API key and Project ID
 
-### Step 2: Enable Broadcast Feature
-Navigate to OpenRouter's Settings > Observability and activate the Broadcast toggle.
+Navigate to Braintrust's Account Settings to create an API key. Locate your Project ID in your project settings.
 
-### Step 3: Configure Integration
-Select the edit option for Braintrust and provide:
-- **Api Key**: Your Braintrust authentication credential
-- **Project Id**: Your Braintrust project identifier
+### Step 2: Enable Broadcast in OpenRouter
+
+Go to [Settings > Observability](https://openrouter.ai/settings/observability) and toggle **Enable Broadcast**.
+
+### Step 3: Configure Braintrust
+
+Click the edit icon next to **Braintrust** and enter:
+
+- **Api Key**: Your Braintrust API key
+- **Project Id**: Your Braintrust project ID
 - **Base Url** (optional): Defaults to `https://api.braintrust.dev`
 
-### Step 4: Validate Connection
-Click "Test Connection" to confirm setup validity. Configuration persists only upon successful testing.
+### Step 4: Test and save
 
-### Step 5: Verify with Test Trace
-Execute an OpenRouter API request and confirm trace visibility in Braintrust.
+Click **Test Connection** to verify the setup. The configuration only saves if the test passes.
 
-## Custom Metadata Support
+### Step 5: Send a test trace
 
-Braintrust accepts custom metadata, tags, and hierarchical span structures for organizing logs.
+Make an API request through OpenRouter and view the trace in Braintrust.
 
-| Key | Braintrust Mapping | Purpose |
-|-----|-------------------|---------|
-| `trace_id` | Span/Root Span ID | Consolidate multiple logs into single trace |
-| `trace_name` | Name | Custom display name in log view |
-| `span_name` | Name | Intermediate span hierarchy identifier |
-| `generation_name` | Name | LLM span designation |
+## Custom Metadata
 
-## Data Transmission
+Braintrust supports custom metadata, tags, and nested span structures for organizing your LLM logs.
 
-Braintrust receives comprehensive metrics including token counts, cached token usage, reasoning tokens, cost breakdowns, and timing data. User and session identifiers map to corresponding Braintrust metadata fields.
+### Supported metadata keys
 
-## Privacy Considerations
+| Key | Braintrust Mapping | Description |
+|-----|-------------------|-------------|
+| `trace_id` | Span ID / Root Span ID | Group multiple logs into a single trace |
+| `trace_name` | Name | Custom name displayed in the Braintrust log view |
+| `span_name` | Name | Name for intermediate spans in the hierarchy |
+| `generation_name` | Name | Name for the LLM span |
 
-When Privacy Mode is enabled, prompt and completion text excludes from traces while preserving token usage, costs, timing, model details, and custom metadata.
+### Additional field mappings
+
+- The `user` field maps to Braintrust's `user_id` in metadata
+- The `session_id` field maps to `session_id` in metadata
+- Custom metadata keys are included in the span's metadata object
+- Tags are passed through for filtering in the Braintrust UI
+
+### Example
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [{ "role": "user", "content": "Generate a summary..." }],
+  "user": "user_12345",
+  "session_id": "session_abc",
+  "trace": {
+    "trace_id": "eval_run_456",
+    "trace_name": "Summarization Eval",
+    "generation_name": "GPT-4o Summary",
+    "eval_dataset": "news_articles",
+    "experiment_id": "exp_789"
+  }
+}
+```
+
+## Data Transmitted
+
+Braintrust receives comprehensive telemetry data including:
+
+- Token counts (prompt, completion, total)
+- Cached token usage when available
+- Reasoning token counts for supported models
+- Cost information (input, output, total costs)
+- Duration and timing metrics
+
+## Privacy Mode
+
+When Privacy Mode is enabled for this destination, prompt and completion content is excluded from traces. All other trace data -- token usage, costs, timing, model information, and custom metadata -- is still sent normally.

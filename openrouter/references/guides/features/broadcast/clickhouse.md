@@ -1,84 +1,165 @@
-# ClickHouse Integration Documentation
+# Broadcast to ClickHouse
 
-OpenRouter enables streaming traces directly to ClickHouse for real-time analytics and custom dashboards.
+[ClickHouse](https://clickhouse.com) is a fast, open-source columnar database for real-time analytics. OpenRouter can stream traces directly to your ClickHouse database for high-performance analytics and custom dashboards.
 
-## Setup Process
+## Setup
 
-### Step 1: Create Traces Table
-Generate the `OPENROUTER_TRACES` table using SQL instructions provided in the OpenRouter dashboard's broadcast configuration.
+### Step 1: Create the traces table
 
-### Step 2: Grant Database Permissions
-Execute this command to authorize your ClickHouse user:
+Set up the `OPENROUTER_TRACES` table in your ClickHouse database. You can find the exact SQL in the OpenRouter dashboard when configuring the destination.
+
+### Step 2: Set up permissions
+
+Grant the necessary permissions to your ClickHouse user:
+
 ```sql
 GRANT CREATE TABLE ON your_database.* TO your_database_user;
 ```
 
-### Step 3: Enable Broadcast Feature
-Navigate to Settings > Observability and activate the Broadcast toggle.
+### Step 3: Enable Broadcast in OpenRouter
 
-### Step 4: Configure Connection Details
-Provide these ClickHouse parameters:
-- **Host**: HTTP endpoint (e.g., `https://clickhouse.example.com:8123`)
+Go to [Settings > Observability](https://openrouter.ai/settings/observability) and toggle **Enable Broadcast**.
+
+### Step 4: Configure ClickHouse
+
+Click the edit icon next to **ClickHouse** and enter:
+
+- **Host**: Your ClickHouse HTTP endpoint (e.g., `https://clickhouse.example.com:8123`)
 - **Database**: Target database name (default: `default`)
-- **Table**: Table identifier (default: `OPENROUTER_TRACES`)
-- **Username**: Authentication user (defaults to `default`)
-- **Password**: Authentication credential
+- **Table**: Table name (default: `OPENROUTER_TRACES`)
+- **Username**: ClickHouse username (default: `default`)
+- **Password**: ClickHouse password
 
-For ClickHouse Cloud instances, the host typically follows this pattern: `https://{instance}.{region}.clickhouse.cloud:8443`
+> For ClickHouse Cloud, your host URL is typically `https://{instance}.{region}.clickhouse.cloud:8443`.
 
-### Step 5: Validate Configuration
-Test the connection to confirm successful setup before saving.
+### Step 5: Test and save
 
-### Step 6: Verify with Sample Data
-Send a test request through OpenRouter and query the table to confirm data ingestion.
+Click **Test Connection** to verify the setup. The configuration only saves if the test passes.
 
-## Query Examples
+### Step 6: Send a test trace
 
-**Cost Analysis by Model**:
-Aggregates spending and token usage across models over 30 days, filtered for successful generation spans.
+Make an API request through OpenRouter and query your ClickHouse table to confirm the trace was received.
 
-**User Activity Analysis**:
-Tracks unique traces, sessions, tokens, costs, and response times per user over 7 days.
+## Table Schema
 
-**Error Diagnostics**:
-Displays failed requests with timestamps, models, finish reasons, and message content from the past hour.
+The schema uses typed columns for commonly-queried fields and JSON string columns for variable-structure data:
 
-**Provider Performance Comparison**:
-Calculates latency metrics across providers, comparing average, median, and 95th percentile response times.
+**Typed columns** include identifiers, timestamps, model information, and metrics for efficient filtering.
 
-**Usage by API Key**:
-Summarizes request counts, expenses, and token consumption per key over 30 days.
+**JSON columns** store flexible data:
 
-## Working with JSON Data
+- `ATTRIBUTES` - Request attributes
+- `INPUT` - Input messages and content
+- `OUTPUT` - Output responses
+- `METADATA` - Custom metadata from the trace field
+- `MODEL_PARAMETERS` - Model configuration parameters
 
-ClickHouse stores variable-structure data as JSON strings. Use `JSONExtract` functions to access nested fields:
+## Custom Metadata
 
-```sql
-SELECT JSONExtractString(METADATA, 'custom_field') FROM OPENROUTER_TRACES
+Custom metadata from the `trace` field is stored in the `METADATA` JSON column for flexible querying.
+
+### Example
+
+```json
+{
+  "model": "openai/gpt-4o",
+  "messages": [{"role": "user", "content": "Analyze these metrics..."}],
+  "user": "user_12345",
+  "session_id": "session_abc",
+  "trace": {
+    "trace_name": "Metrics Analysis Pipeline",
+    "generation_name": "Analyze Trends",
+    "team": "data-engineering",
+    "pipeline_version": "2.0",
+    "data_source": "clickhouse_metrics"
+  }
+}
 ```
 
-## Schema Organization
+## Example Queries
 
-**Typed Columns**: Frequently-queried fields like trace IDs, timestamps, model names, and token metrics.
+### Cost analysis by model
 
-**JSON Columns**: Less common or variable data stored as strings (ATTRIBUTES, INPUT, OUTPUT, METADATA, MODEL_PARAMETERS).
-
-## Custom Metadata Support
-
-The `trace` object parameter supports custom key-value pairs mapped to the METADATA JSON column:
-
-| Metadata Key | Mapping | Purpose |
-|---|---|---|
-| `trace_id` | TRACE_ID / METADATA JSON | Custom grouping identifier |
-| `trace_name` | METADATA JSON | Trace label |
-| `span_name` | METADATA JSON | Span identifier |
-| `generation_name` | METADATA JSON | LLM generation label |
-
-Query custom metadata using ClickHouse JSON functions:
 ```sql
-SELECT JSONExtractString(METADATA, 'team') FROM OPENROUTER_TRACES
+SELECT toDate(TIMESTAMP) as day, MODEL, sum(TOTAL_COST) as total_cost,
+sum(TOTAL_TOKENS) as total_tokens, count() as request_count
+FROM OPENROUTER_TRACES
+WHERE TIMESTAMP >= now() - INTERVAL 30 DAY
+AND STATUS = 'ok' AND SPAN_TYPE = 'GENERATION'
+GROUP BY day, MODEL ORDER BY day DESC, total_cost DESC;
 ```
 
-## Privacy Considerations
+### User activity analysis
 
-Privacy Mode excludes prompt and completion text from traces while preserving token counts, expenses, timing data, model information, and custom metadata.
+```sql
+SELECT USER_ID, uniqExact(TRACE_ID) as trace_count,
+uniqExact(SESSION_ID) as session_count, sum(TOTAL_TOKENS) as total_tokens,
+sum(TOTAL_COST) as total_cost, avg(DURATION_MS) as avg_duration_ms
+FROM OPENROUTER_TRACES
+WHERE TIMESTAMP >= now() - INTERVAL 7 DAY AND SPAN_TYPE = 'GENERATION'
+GROUP BY USER_ID ORDER BY total_cost DESC;
+```
+
+### Error analysis
+
+```sql
+SELECT TRACE_ID, TIMESTAMP, MODEL, LEVEL, FINISH_REASON, METADATA, INPUT, OUTPUT
+FROM OPENROUTER_TRACES
+WHERE STATUS = 'error' AND TIMESTAMP >= now() - INTERVAL 1 HOUR
+ORDER BY TIMESTAMP DESC;
+```
+
+### Provider performance comparison
+
+```sql
+SELECT PROVIDER_NAME, MODEL, avg(DURATION_MS) as avg_duration_ms,
+quantile(0.5)(DURATION_MS) as p50_duration_ms,
+quantile(0.95)(DURATION_MS) as p95_duration_ms, count() as request_count
+FROM OPENROUTER_TRACES
+WHERE TIMESTAMP >= now() - INTERVAL 7 DAY AND STATUS = 'ok'
+AND SPAN_TYPE = 'GENERATION' GROUP BY PROVIDER_NAME, MODEL
+HAVING request_count >= 10 ORDER BY avg_duration_ms;
+```
+
+### Usage by API key
+
+```sql
+SELECT API_KEY_NAME, uniqExact(TRACE_ID) as trace_count,
+sum(TOTAL_COST) as total_cost, sum(PROMPT_TOKENS) as prompt_tokens,
+sum(COMPLETION_TOKENS) as completion_tokens
+FROM OPENROUTER_TRACES
+WHERE TIMESTAMP >= now() - INTERVAL 30 DAY AND SPAN_TYPE = 'GENERATION'
+GROUP BY API_KEY_NAME ORDER BY total_cost DESC;
+```
+
+### Accessing JSON columns
+
+```sql
+SELECT TRACE_ID, JSONExtractString(METADATA, 'custom_field') as custom_value,
+JSONExtractString(ATTRIBUTES, 'gen_ai.request.model') as requested_model
+FROM OPENROUTER_TRACES WHERE JSONHas(METADATA, 'custom_field');
+```
+
+### Parsing input messages
+
+```sql
+SELECT TRACE_ID,
+JSONExtractString(JSONExtractRaw(INPUT, 'messages'), 1, 'role') as first_message_role,
+JSONExtractString(JSONExtractRaw(INPUT, 'messages'), 1, 'content') as first_message_content
+FROM OPENROUTER_TRACES WHERE SPAN_TYPE = 'GENERATION' LIMIT 10;
+```
+
+### Querying custom metadata
+
+```sql
+SELECT TRACE_ID, JSONExtractString(METADATA, 'team') as team,
+JSONExtractString(METADATA, 'pipeline_version') as pipeline_version,
+JSONExtractString(METADATA, 'data_source') as data_source, TOTAL_COST, TOTAL_TOKENS
+FROM OPENROUTER_TRACES
+WHERE JSONHas(METADATA, 'team') AND SPAN_TYPE = 'GENERATION'
+ORDER BY TIMESTAMP DESC;
+```
+
+## Privacy Mode
+
+When Privacy Mode is enabled for this destination, prompt and completion content is excluded from traces. All other trace data -- token usage, costs, timing, model information, and custom metadata -- is still sent normally.

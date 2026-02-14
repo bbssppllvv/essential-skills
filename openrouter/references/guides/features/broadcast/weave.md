@@ -1,58 +1,78 @@
-# W&B Weave Broadcast Integration
+# W&B Weave
 
-## Overview
+Send traces to W&B Weave
 
-"Weights & Biases Weave is an observability platform for tracking and evaluating LLM applications." This integration enables automatic trace delivery from OpenRouter requests to your W&B workspace.
+[Weights & Biases Weave](https://wandb.ai/site/weave) is an observability platform for tracking and evaluating LLM applications.
 
-## Setup Instructions
+## Step 1: Get your W&B API key
 
-### Step 1: Obtain W&B Credentials
-Navigate to your W&B User Settings and retrieve your API key for authentication purposes.
+In W&B, go to your [User Settings](https://wandb.ai/settings) and copy your API key.
 
-### Step 2: Activate Broadcast Feature
-Access OpenRouter's Settings > Observability section and enable the Broadcast toggle.
+## Step 2: Enable Broadcast in OpenRouter
 
-### Step 3: Configure W&B Weave Settings
-Click the edit option for W&B Weave and provide:
-- **Api Key**: Your W&B authentication credential
-- **Entity**: Username or team identifier
-- **Project**: Target project name for trace logging
-- **Base Url** (optional): Defaults to `https://trace.wandb.ai`
+Go to [Settings > Observability](https://openrouter.ai/settings/observability) and toggle **Enable Broadcast**.
 
-### Step 4: Verify Configuration
-"Click Test Connection to verify the setup. The configuration only saves if the test passes."
+## Step 3: Configure W&B Weave
 
-### Step 5: Generate a Test Trace
-Execute an API request via OpenRouter and inspect the resulting trace in W&B Weave.
+Click the edit icon next to **W&B Weave** and enter:
 
-## Custom Metadata Support
+- **Api Key**: Your W&B API key
+- **Entity**: Your W&B username or team name
+- **Project**: The project name where traces will be logged
+- **Base Url** (optional): Default is `https://trace.wandb.ai`
 
-You can enrich traces with structured data:
+## Step 4: Test and save
 
-| Key | Weave Mapping | Purpose |
-|-----|---------------|---------|
-| `trace_id` | `openrouter_trace_id` attribute | Custom identifier |
-| `trace_name` | `op_name` | Operation display name |
-| `generation_name` | `op_name` | LLM call identifier |
+Click **Test Connection** to verify the setup. The configuration only saves if the test passes.
 
-### Example Payload
+## Step 5: Send a test trace
+
+Make an API request through OpenRouter and view the trace in W&B Weave.
+
+## Custom Metadata
+
+W&B Weave supports custom attributes and structured inputs for organizing and analyzing your LLM calls.
+
+### Supported Metadata Keys
+
+| Key | Weave Mapping | Description |
+| --- | --- | --- |
+| `trace_id` | `openrouter_trace_id` attribute | Custom trace identifier stored in attributes |
+| `trace_name` | `op_name` | Custom operation name displayed in the Weave call list |
+| `generation_name` | `op_name` | Name for the LLM call |
+
+### Example
+
 ```json
 {
   "model": "openai/gpt-4o",
-  "messages": [{"role": "user", "content": "Write a poem about AI..."}],
+  "messages": [{ "role": "user", "content": "Write a poem about AI..." }],
   "user": "user_12345",
   "session_id": "session_abc",
   "trace": {
     "trace_name": "Creative Writing Agent",
-    "prompt_template": "poem_v2"
+    "prompt_template": "poem_v2",
+    "experiment_name": "creative_benchmark",
+    "dataset_version": "1.0.0"
   }
 }
 ```
 
-## Data Organization
+### Attributes and Inputs
 
-Traces organize into three categories: attributes (metadata), inputs (request data and parameters), and summary (token usage, costs, timing).
+Weave organizes trace data into:
 
-## Privacy Considerations
+- **Attributes**: Metadata about the call (user IDs, organization IDs, trace identifiers, custom metadata)
+- **Inputs**: The actual request data including messages, model parameters (temperature, max_tokens, etc.)
+- **Summary**: Token usage, costs, and timing metrics
 
-When Privacy Mode is enabled, prompt and completion text is excluded, while metrics and metadata remain transmitted.
+### Additional Context
+
+- The `user` field maps to `user_id` in attributes
+- The `session_id` field maps to `session_id` in attributes
+- Custom metadata keys from `trace` are merged into the call's attributes
+- Model parameters (temperature, max_tokens, top_p) are included in inputs for easy filtering
+
+## Privacy Mode
+
+When Privacy Mode is enabled for this destination, prompt and completion content is excluded from traces. All other trace data -- token usage, costs, timing, model information, and custom metadata -- is still sent normally.

@@ -1,45 +1,178 @@
-# API Key Rotation - OpenRouter Documentation
+# API Key Rotation
 
-## Overview
+Secure Key Management for OpenRouter
 
-OpenRouter's Management API enables programmatic API key rotation without service interruption, supporting security best practices and compliance requirements.
+---
+
+Regular API key rotation is a security best practice that limits the impact of compromised credentials. OpenRouter's Management API makes it easy to rotate keys programmatically without service interruption.
 
 ## Why Rotate API Keys?
 
-Regular rotation accomplishes several goals: it "limits the window of exposure if a key is compromised," helps meet compliance standards, enables audit trail tracking, and facilitates access revocation for departing team members or obsolete systems.
+Rotating API keys regularly helps protect your applications by:
 
-## Rotation Strategy
+- **Limiting exposure**: Reducing the window of vulnerability if a key is compromised
+- **Meeting compliance requirements**: Satisfying credential management policies
+- **Enabling clean audit trails**: Tracking key usage over defined periods
+- **Revoking access**: Allowing you to revoke access for former team members or deprecated systems
 
-The zero-downtime approach involves three sequential steps: create a new key, migrate applications to use it, then remove the old one. The documentation emphasizes: "Always verify your new key is working in production before deleting the old one."
+## Zero-Downtime Rotation Process
 
-## Implementation Steps
+A zero-downtime key rotation follows three steps:
+
+1. **Create a new key**
+2. **Update your applications** to use the new key
+3. **Delete the old key** once all systems have migrated
+
+> **Important**: Always verify your new key is working in production before deleting the old one.
 
 ### Step 1: Create a New Key
 
-You'll need a Management API key from OpenRouter settings. The creation process is available in three formats:
+#### TypeScript SDK
 
-- **TypeScript SDK**: Uses the OpenRouter SDK to create a key with name and spending limit parameters
-- **Python**: Makes a POST request to the `/keys/` endpoint with Bearer token authentication
-- **TypeScript (fetch)**: Raw fetch-based implementation with identical parameters
+```typescript
+import { OpenRouter } from '@openrouter/sdk';
 
-All approaches return the new key and its hash for later deletion.
+const openRouter = new OpenRouter({
+  apiKey: 'your-management-key',
+});
 
-### Step 2: Update Applications
+const newKey = await openRouter.apiKeys.create({
+  name: 'Production Key - Rotated 2025-01',
+  limit: 1000,
+});
 
-Deploy the new key across your infrastructure through environment variables, secrets managers (AWS Secrets Manager, HashiCorp Vault), or CI/CD pipeline updates. Both keys remain valid during this transition, enabling gradual rollout.
+console.log('New key created:', newKey.data.key);
+console.log('Key hash:', newKey.data.hash);
+```
+
+#### Python
+
+```python
+import requests
+
+MANAGEMENT_API_KEY = "your-management-key"
+BASE_URL = "https://openrouter.ai/api/v1/keys"
+
+response = requests.post(
+    f"{BASE_URL}/",
+    headers={
+        "Authorization": f"Bearer {MANAGEMENT_API_KEY}",
+        "Content-Type": "application/json"
+    },
+    json={
+        "name": "Production Key - Rotated 2025-01",
+        "limit": 1000
+    }
+)
+
+data = response.json()
+print(f"New key created: {data['data']['key']}")
+print(f"Key hash: {data['data']['hash']}")
+```
+
+#### TypeScript (fetch)
+
+```typescript
+const MANAGEMENT_API_KEY = 'your-management-key';
+const BASE_URL = 'https://openrouter.ai/api/v1/keys';
+
+const response = await fetch(BASE_URL, {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${MANAGEMENT_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'Production Key - Rotated 2025-01',
+    limit: 1000,
+  }),
+});
+
+const { data } = await response.json();
+console.log('New key created:', data.key);
+console.log('Key hash:', data.hash);
+```
+
+### Step 2: Deploy Updated Credentials
+
+Both old and new keys remain valid during the transition period. Update your credentials across:
+
+- Environment variables
+- Secrets managers (AWS Secrets Manager, HashiCorp Vault)
+- CI/CD systems
+- Application configuration
 
 ### Step 3: Delete the Old Key
 
-Once migration is complete, remove the old key using the key hash, available in three implementation languages matching the creation step.
+Once all systems have migrated to the new key, delete the old one using the key hash returned from the creation response.
+
+#### TypeScript SDK
+
+```typescript
+import { OpenRouter } from '@openrouter/sdk';
+
+const openRouter = new OpenRouter({
+  apiKey: 'your-management-key',
+});
+
+const oldKeyHash = 'hash-of-old-key';
+await openRouter.apiKeys.delete(oldKeyHash);
+
+console.log('Old key deleted successfully');
+```
+
+#### Python
+
+```python
+import requests
+
+MANAGEMENT_API_KEY = "your-management-key"
+BASE_URL = "https://openrouter.ai/api/v1/keys"
+
+old_key_hash = "hash-of-old-key"
+response = requests.delete(
+    f"{BASE_URL}/{old_key_hash}",
+    headers={
+        "Authorization": f"Bearer {MANAGEMENT_API_KEY}",
+        "Content-Type": "application/json"
+    }
+)
+
+print("Old key deleted successfully")
+```
+
+#### TypeScript (fetch)
+
+```typescript
+const MANAGEMENT_API_KEY = 'your-management-key';
+const BASE_URL = 'https://openrouter.ai/api/v1/keys';
+
+const oldKeyHash = 'hash-of-old-key';
+await fetch(`${BASE_URL}/${oldKeyHash}`, {
+  method: 'DELETE',
+  headers: {
+    Authorization: `Bearer ${MANAGEMENT_API_KEY}`,
+    'Content-Type': 'application/json',
+  },
+});
+
+console.log('Old key deleted successfully');
+```
 
 ## BYOK Advantage
 
-With Bring Your Own Key configuration, "you can rotate your OpenRouter API keys without ever needing to rotate your provider keys." This separation means provider credentials (OpenAI, Anthropic, Google) remain stable while application-facing OpenRouter keys rotate independently through a single management interface.
+If you use Bring Your Own Key (BYOK) with OpenRouter, you can rotate your OpenRouter API keys without ever needing to rotate your provider keys. Your provider API keys are stored securely in OpenRouter and associated with your account, not with individual OpenRouter API keys. This separation simplifies compliance workflows while maintaining stable provider connections.
 
 ## Best Practices
 
-- Use descriptive naming with dates or version numbers
-- Monitor the Activity page to confirm traffic migration
-- Apply spending limits to new keys
-- Establish a regular rotation schedule (e.g., quarterly)
-- Validate processes in staging environments first
+- **Use descriptive key names**: Include rotation dates or version numbers for easy tracking (e.g., `Production Key - Rotated 2025-01`)
+- **Monitor key usage**: Check the Activity page to verify traffic has migrated to the new key before deleting the old one
+- **Set appropriate spending limits**: Apply spending limits on new keys to prevent unexpected costs
+- **Document your rotation schedule**: Establish a regular rotation cadence (e.g., quarterly)
+- **Test in staging first**: Always verify the rotation process in a staging environment before applying to production
+
+## Related Documentation
+
+- [Management API Keys](/docs/guides/overview/auth/provisioning-api-keys) - Complete key management API reference
+- [API Authentication](/docs/api/reference/authentication) - Authentication methods overview
+- [Infisical Integration](/docs/guides/community/infisical) - Automated key management with Infisical

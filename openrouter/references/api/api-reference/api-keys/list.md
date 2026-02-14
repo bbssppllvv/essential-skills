@@ -1,39 +1,200 @@
-# List API Keys - OpenRouter Documentation
+# List API Keys
 
-## Endpoint Overview
+List all API keys for the authenticated user. Management key required.
 
-The List API Keys endpoint retrieves all API keys associated with an authenticated user.
+## Endpoint
 
-**Endpoint:** `GET https://openrouter.ai/api/v1/keys`
+**Method:** GET
+**URL:** `https://openrouter.ai/api/v1/keys`
 
-**Authentication:** Requires a management API key as a bearer token in the Authorization header.
+## Authentication
 
-## Query Parameters
+Management key required as Bearer token in Authorization header.
 
-- **include_disabled** (optional): Boolean to include disabled API keys in results
-- **offset** (optional): Number of keys to skip for pagination
+## Request Parameters
 
-## Response Schema
+| Parameter | Location | Type | Required | Description |
+|-----------|----------|------|----------|-------------|
+| Authorization | header | string | Yes | API key as bearer token in Authorization header |
+| include_disabled | query | string | No | Whether to include disabled API keys in the response |
+| offset | query | string | No | Number of API keys to skip for pagination |
 
-The endpoint returns a JSON object containing a `data` array. Each API key object includes:
+## Response (200 OK)
 
-**Key Properties:**
-- `hash`: Unique identifier for the key
-- `name`: Key name
-- `label`: Human-readable label
-- `disabled`: Boolean status
-- `limit` / `limit_remaining`: Spending limits in USD
-- `usage`, `usage_daily`, `usage_weekly`, `usage_monthly`: Credit usage metrics
-- `byok_usage*`: External BYOK usage metrics
-- `created_at`, `updated_at`, `expires_at`: Timestamp fields
+**Root Object:**
 
-## HTTP Status Codes
+- `data` (array, required): List of API keys
 
-- **200**: Successful response with key list
-- **401**: Authentication failure
-- **429**: Rate limit exceeded
-- **500**: Server error
+**Data Items:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| hash | string | Unique hash identifier for the API key |
+| name | string | Name of the API key |
+| label | string | Human-readable label for the API key |
+| disabled | boolean | Whether the API key is disabled |
+| limit | number\|null | Spending limit for the API key in USD |
+| limit_remaining | number\|null | Remaining spending limit in USD |
+| limit_reset | string\|null | Type of limit reset for the API key |
+| include_byok_in_limit | boolean | Whether to include external BYOK usage in the credit limit |
+| usage | number | Total OpenRouter credit usage (in USD) |
+| usage_daily | number | OpenRouter credit usage (in USD) for current UTC day |
+| usage_weekly | number | OpenRouter credit usage for current UTC week |
+| usage_monthly | number | OpenRouter credit usage (in USD) for current UTC month |
+| byok_usage | number | Total external BYOK usage (in USD) |
+| byok_usage_daily | number | External BYOK usage (in USD) for current UTC day |
+| byok_usage_weekly | number | External BYOK usage for current UTC week |
+| byok_usage_monthly | number | External BYOK usage (in USD) for current UTC month |
+| created_at | string | ISO 8601 timestamp of when the API key was created |
+| updated_at | string\|null | ISO 8601 timestamp of last update |
+| expires_at | string\|null | ISO 8601 UTC timestamp when key expires, or null if no expiration |
+
+## Error Responses
+
+- **401:** Unauthorized - Missing or invalid authentication
+- **429:** Too Many Requests - Rate limit exceeded
+- **500:** Internal Server Error
 
 ## Code Examples
 
-The documentation provides implementation examples in Python, JavaScript, Go, Ruby, Java, PHP, C#, and Swift. All examples follow the pattern of sending a GET request with Bearer token authentication to the endpoint URL.
+### Python
+
+```python
+import requests
+
+url = "https://openrouter.ai/api/v1/keys"
+
+headers = {"Authorization": "Bearer <token>"}
+
+response = requests.get(url, headers=headers)
+
+print(response.json())
+```
+
+### JavaScript
+
+```javascript
+const url = 'https://openrouter.ai/api/v1/keys';
+const options = {method: 'GET', headers: {Authorization: 'Bearer <token>'}};
+
+try {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  console.log(data);
+} catch (error) {
+  console.error(error);
+}
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"io"
+)
+
+func main() {
+
+	url := "https://openrouter.ai/api/v1/keys"
+
+	req, _ := http.NewRequest("GET", url, nil)
+
+	req.Header.Add("Authorization", "Bearer <token>")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+
+}
+```
+
+### Ruby
+
+```ruby
+require 'uri'
+require 'net/http'
+
+url = URI("https://openrouter.ai/api/v1/keys")
+
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true
+
+request = Net::HTTP::Get.new(url)
+request["Authorization"] = 'Bearer <token>'
+
+response = http.request(request)
+puts response.read_body
+```
+
+### Java
+
+```java
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+
+HttpResponse<String> response = Unirest.get("https://openrouter.ai/api/v1/keys")
+  .header("Authorization", "Bearer <token>")
+  .asString();
+```
+
+### PHP
+
+```php
+<?php
+require_once('vendor/autoload.php');
+
+$client = new \GuzzleHttp\Client();
+
+$response = $client->request('GET', 'https://openrouter.ai/api/v1/keys', [
+  'headers' => [
+    'Authorization' => 'Bearer <token>',
+  ],
+]);
+
+echo $response->getBody();
+```
+
+### C#
+
+```csharp
+using RestSharp;
+
+var client = new RestClient("https://openrouter.ai/api/v1/keys");
+var request = new RestRequest(Method.GET);
+request.AddHeader("Authorization", "Bearer <token>");
+IRestResponse response = client.Execute(request);
+```
+
+### Swift
+
+```swift
+import Foundation
+
+let headers = ["Authorization": "Bearer <token>"]
+
+let request = NSMutableURLRequest(url: NSURL(string: "https://openrouter.ai/api/v1/keys")! as URL,
+                                        cachePolicy: .useProtocolCachePolicy,
+                                    timeoutInterval: 10.0)
+request.httpMethod = "GET"
+request.allHTTPHeaderFields = headers
+
+let session = URLSession.shared
+let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+  if (error != nil) {
+    print(error as Any)
+  } else {
+    let httpResponse = response as? HTTPURLResponse
+    print(httpResponse)
+  }
+})
+
+dataTask.resume()
+```

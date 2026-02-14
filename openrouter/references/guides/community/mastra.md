@@ -1,31 +1,236 @@
-# Mastra Integration with OpenRouter
+---
+title: Mastra
+description: Integrate OpenRouter using Mastra framework for unified AI model access
+---
 
-## Overview
+# Mastra Integration
 
-The documentation provides a comprehensive guide for integrating OpenRouter with the Mastra framework to access multiple AI models through a unified interface.
+Integrate OpenRouter using Mastra framework for unified AI model access through a single interface.
 
-## Setup Process
+## Setup
 
-**Project Initialization**: Users begin by creating a new Mastra project using `npx create-mastra@latest`, selecting Agents as the component and OpenAI as the default provider (which will be replaced).
+### Project Initialization
 
-**Environment Configuration**: The `.env.development` file requires an OpenRouter API key to be added: `OPENROUTER_API_KEY=sk-or-your-api-key-here`. The guide recommends removing the OpenAI package and installing `@openrouter/ai-sdk-provider` instead.
+The quickest way to get started is using the Mastra CLI:
 
-**Agent Setup**: Agents are configured in `src/mastra/agents/agent.ts` by importing the OpenRouter provider and creating agents with specific models like Claude 3 Opus.
+```bash
+npx create-mastra@latest
+```
 
-## Running the Application
+This will guide you through prompts to set up your project.
 
-After configuration, developers run `npm run dev` to start the development server. This provides:
-- REST API at `http://localhost:4111/api/agents/assistant/generate`
-- Interactive playground at `http://localhost:4111`
+### Environment Configuration
 
-The guide includes a curl example for testing the API endpoint directly.
+Add your credentials to `.env.development`:
 
-## Key Features Demonstrated
+```
+# .env.development
+# OPENAI_API_KEY=your-openai-key  # Comment out or remove this line
+OPENROUTER_API_KEY=sk-or-your-api-key-here
+```
 
-**Basic Integration**: Simple agent creation using OpenRouter's provider with message generation capabilities.
+### Install the Provider
 
-**Advanced Configuration**: Support for additional options like reasoning parameters and model-specific settings through `extraBody` parameters.
+If you previously had the OpenAI provider installed, remove it first:
 
-**Multiple Models**: Examples showing how to create separate agents for different providers (Claude and GPT-4) within the same application.
+```bash
+npm uninstall @ai-sdk/openai
+```
 
-**Provider-Specific Options**: Implementation of provider-specific settings such as Anthropic's cache control features within requests.
+Then install the OpenRouter provider:
+
+```bash
+npm install @openrouter/ai-sdk-provider
+```
+
+## Agent Configuration
+
+### Basic Agent Setup
+
+Create your agent file at `src/mastra/agents/agent.ts`:
+
+```typescript
+import { Agent } from '@mastra/core/agent';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+
+// Initialize OpenRouter provider
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
+// Create an agent
+export const assistant = new Agent({
+  model: openrouter('anthropic/claude-3-opus'),
+  name: 'Assistant',
+  instructions:
+    'You are a helpful assistant with expertise in technology and science.',
+});
+```
+
+### Mastra Entry Point
+
+Update your Mastra entry point at `src/mastra/index.ts`:
+
+```typescript
+import { Mastra } from '@mastra/core';
+
+import { assistant } from './agents/agent'; // Update the import path if you used a different filename
+
+export const mastra = new Mastra({
+  agents: { assistant }, // Use the same name here as you exported from your agent file
+});
+```
+
+## Running Your Application
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Your agent becomes accessible via:
+
+- **REST endpoint**: `http://localhost:4111/api/agents/assistant/generate`
+- **Interactive playground**: `http://localhost:4111`
+
+### Testing with curl
+
+```bash
+curl -X POST http://localhost:4111/api/agents/assistant/generate \
+-H "Content-Type: application/json" \
+-d '{"messages": ["What are the latest advancements in quantum computing?"]}'
+```
+
+## Basic Integration Example
+
+```typescript
+import { Agent } from '@mastra/core/agent';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+
+// Initialize the OpenRouter provider
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
+// Create an agent using OpenRouter
+const assistant = new Agent({
+  model: openrouter('anthropic/claude-3-opus'),
+  name: 'Assistant',
+  instructions: 'You are a helpful assistant.',
+});
+
+// Generate a response
+const response = await assistant.generate([
+  {
+    role: 'user',
+    content: 'Tell me about renewable energy sources.',
+  },
+]);
+
+console.log(response.text);
+```
+
+## Multi-Model Support
+
+The framework allows creating multiple agents with different models, enabling model comparison and selection based on specific use cases:
+
+```typescript
+import { Agent } from '@mastra/core/agent';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
+// Create agents using different models
+const claudeAgent = new Agent({
+  model: openrouter('anthropic/claude-3-opus'),
+  name: 'ClaudeAssistant',
+  instructions: 'You are a helpful assistant powered by Claude.',
+});
+
+const gptAgent = new Agent({
+  model: openrouter('openai/gpt-4'),
+  name: 'GPTAssistant',
+  instructions: 'You are a helpful assistant powered by GPT-4.',
+});
+
+// Use different agents based on your needs
+const claudeResponse = await claudeAgent.generate([
+  {
+    role: 'user',
+    content: 'Explain quantum mechanics simply.',
+  },
+]);
+console.log(claudeResponse.text);
+
+const gptResponse = await gptAgent.generate([
+  {
+    role: 'user',
+    content: 'Explain quantum mechanics simply.',
+  },
+]);
+console.log(gptResponse.text);
+```
+
+## Advanced Configuration
+
+### Using extraBody for Provider-Specific Options
+
+```typescript
+import { Agent } from '@mastra/core/agent';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+
+// Initialize with advanced options
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+  extraBody: {
+    reasoning: {
+      max_tokens: 10,
+    },
+  },
+});
+
+// Create an agent with model-specific options
+const chefAgent = new Agent({
+  model: openrouter('anthropic/claude-3.7-sonnet', {
+    extraBody: {
+      reasoning: {
+        max_tokens: 10,
+      },
+    },
+  }),
+  name: 'Chef',
+  instructions: 'You are a chef assistant specializing in French cuisine.',
+});
+```
+
+### Using providerOptions for Caching and Other Features
+
+```typescript
+// Get a response with provider-specific options
+const response = await chefAgent.generate([
+  {
+    role: 'system',
+    content:
+      'You are Chef Michel, a culinary expert specializing in ketogenic (keto) diet...',
+    providerOptions: {
+      // Provider-specific options - key can be 'anthropic' or 'openrouter'
+      anthropic: {
+        cacheControl: { type: 'ephemeral' },
+      },
+    },
+  },
+  {
+    role: 'user',
+    content: 'Can you suggest a keto breakfast?',
+  },
+]);
+```
+
+## Additional Resources
+
+- [OpenRouter Documentation](https://openrouter.ai/docs)
+- [Mastra Framework Documentation](https://mastra.ai/docs)
+- [Vercel AI SDK Documentation](https://ai-sdk.dev)

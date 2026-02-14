@@ -1,40 +1,131 @@
-# Distillation: Compliance with Provider and Model Creator Policies
+# Distillation
 
-## Overview
+Ensure compliance with provider and model creator policies for distillation
 
-Model distillation involves training smaller, efficient models using outputs from larger models. OpenRouter helps ensure compliance with provider policies regarding distillation by tracking which models permit their outputs for training purposes.
+---
 
-## Key Concept
+Model distillation is the process of training a smaller, more efficient model using outputs from a larger model. While this technique is powerful for creating specialized models, it's important to respect the terms of service set by model providers and creators.
 
-As stated in the documentation, "some model providers and creators explicitly prohibit using their model outputs to train other models, while others allow it." OpenRouter addresses this through the `is_trainable_text` property, which identifies models whose authors permit text distillation.
+Some model providers and creators explicitly prohibit using their model outputs to train other models, while others allow it. OpenRouter makes it easy to filter for models that permit distillation, helping you stay compliant with these policies.
 
-## Finding Distillable Models
+## Why Distillation Compliance Matters
 
-Users can locate compliant models in two ways:
+When you use model outputs to train or fine-tune other models, you need to ensure you have permission to do so. Using outputs from models that prohibit distillation could violate terms of service agreements and potentially expose you to legal liability.
 
-**1. Web Interface**
-- Navigate to the Models page with the distillable filter enabled
-- Filter for "Yes" to display only models permitting distillation
+OpenRouter tracks which models allow their outputs to be used for training purposes through the `is_trainable_text` property. Models where the author has explicitly allowed text distillation are marked as distillable.
 
-**2. Programmatic Approach**
-Use the `enforce_distillable_text` parameter set to `true` in API requests to restrict routing to compliant models only.
+> **Tip**: OpenRouter provides distillation information on a best-effort basis. You should always verify the specific license terms for your use case, as licensing requirements may vary depending on how you intend to use the model outputs.
 
-## API Implementation Examples
+## Finding Distillable Models on the Model Page
 
-The documentation provides code samples in TypeScript (SDK and fetch), Python, and cURL. Each example demonstrates setting the provider parameter:
+The easiest way to find models that allow distillation is to use the **Distillable** filter on the Models page.
 
-```json
-{
-  "enforce_distillable_text": true
-}
+1. Navigate to the Models page with the distillable filter enabled
+2. The **Distillable** filter in the filter panel will be set to **Yes**, showing only models that allow distillation
+
+This filter shows you all models where the author has permitted their outputs to be used for training purposes, making it easy to build compliant distillation workflows.
+
+## Using the Routing Parameter
+
+For programmatic control, you can use the `enforce_distillable_text` parameter in your API requests. When set to `true`, OpenRouter will only route your request to models that allow text distillation.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `enforce_distillable_text` | boolean | - | Restrict routing to only models that allow text distillation. |
+
+When `enforce_distillable_text` is set to `true`, the request will only be routed to models where the author has explicitly enabled text distillation. If no distillable models are available for your request, you'll receive an error.
+
+### Example: Enforcing Distillable Models
+
+#### TypeScript SDK
+
+```typescript
+import { OpenRouter } from '@openrouter/sdk';
+
+const openRouter = new OpenRouter({
+  apiKey: '<OPENROUTER_API_KEY>',
+});
+
+const completion = await openRouter.chat.send({
+  model: 'meta-llama/llama-3.1-70b-instruct',
+  messages: [{ role: 'user', content: 'Explain quantum computing' }],
+  provider: {
+    enforceDistillableText: true,
+  },
+  stream: false,
+});
 ```
 
-## Important Consideration
+#### TypeScript (fetch)
 
-OpenRouter emphasizes that "distillation information [is provided] on a best-effort basis" and recommends verifying specific license terms for your particular use case, as requirements vary by application.
+```typescript
+fetch('https://openrouter.ai/api/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <OPENROUTER_API_KEY>',
+    'HTTP-Referer': '<YOUR_SITE_URL>',
+    'X-Title': '<YOUR_SITE_NAME>',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: 'meta-llama/llama-3.1-70b-instruct',
+    messages: [{ role: 'user', content: 'Explain quantum computing' }],
+    provider: {
+      enforce_distillable_text: true,
+    },
+  }),
+});
+```
 
-## Practical Applications
+#### Python
 
-- Creating training datasets from model outputs
-- Building specialized smaller models from larger teachers
-- Maintaining programmatic compliance across API requests
+```python
+import requests
+
+headers = {
+  'Authorization': 'Bearer <OPENROUTER_API_KEY>',
+  'HTTP-Referer': '<YOUR_SITE_URL>',
+  'X-Title': '<YOUR_SITE_NAME>',
+  'Content-Type': 'application/json',
+}
+
+response = requests.post('https://openrouter.ai/api/v1/chat/completions', headers=headers, json={
+  'model': 'meta-llama/llama-3.1-70b-instruct',
+  'messages': [{ 'role': 'user', 'content': 'Explain quantum computing' }],
+  'provider': {
+    'enforce_distillable_text': True,
+  },
+})
+```
+
+#### cURL
+
+```bash
+curl https://openrouter.ai/api/v1/chat/completions \
+  -H "Authorization: Bearer <OPENROUTER_API_KEY>" \
+  -H "HTTP-Referer: <YOUR_SITE_URL>" \
+  -H "X-Title: <YOUR_SITE_NAME>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "meta-llama/llama-3.1-70b-instruct",
+    "messages": [{"role": "user", "content": "Explain quantum computing"}],
+    "provider": {
+      "enforce_distillable_text": true
+    }
+  }'
+```
+
+## Use Cases
+
+The distillable filter is particularly useful for:
+
+- **Building training datasets**: When collecting model outputs to train or fine-tune your own models, ensure you only use outputs from models that permit this use.
+
+- **Distillation pipelines**: When creating smaller, specialized models from larger teacher models, filter for models that allow their outputs to be used for training.
+
+- **Compliance workflows**: Organizations with strict compliance requirements can enforce distillation policies programmatically across all API requests.
+
+## Related Documentation
+
+- [Provider Routing](/docs/features/provider-routing) - Learn more about the `enforce_distillable_text` parameter and other provider routing options
+- [Models](https://openrouter.ai/models) - Browse all available models and their capabilities

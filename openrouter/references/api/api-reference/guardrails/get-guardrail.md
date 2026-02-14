@@ -1,41 +1,155 @@
-# Get a Guardrail - API Documentation
+# Get a Guardrail
 
-## Overview
+`GET https://openrouter.ai/api/v1/guardrails/{id}`
 
-The Get a Guardrail endpoint retrieves a single guardrail configuration by its unique identifier from OpenRouter's API.
+Get a single guardrail by ID. Requires a management API key.
 
-**Endpoint:** `GET https://openrouter.ai/api/v1/guardrails/{id}`
+## Authentication
 
-**Authentication:** Management API key required as a bearer token
+Requires a Management API key passed as a bearer token in the `Authorization` header.
 
-## Request Parameters
+## Path Parameters
 
-- **id** (path, required): UUID format identifier for the guardrail
-- **Authorization** (header, required): API key formatted as bearer token
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| id | string (uuid) | Yes | The unique identifier of the guardrail to retrieve |
 
-## Response Details
+## Response (200 OK)
 
-### Success Response (200)
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string (uuid) | Unique identifier for the guardrail |
+| name | string | Name of the guardrail |
+| description | string or null | Description of the guardrail |
+| limit_usd | number or null | Spending limit in USD |
+| reset_interval | string or null | Interval at which the limit resets (`daily`, `weekly`, `monthly`) |
+| allowed_providers | array or null | List of allowed provider IDs |
+| allowed_models | array or null | Array of model canonical_slugs (immutable identifiers) |
+| enforce_zdr | boolean or null | Whether to enforce zero data retention |
+| created_at | string | ISO 8601 timestamp of when the guardrail was created |
+| updated_at | string or null | ISO 8601 timestamp of when the guardrail was last updated |
 
-Returns guardrail details including:
+## Error Responses
 
-- **id**: Unique UUID identifier
-- **name**: Guardrail name
-- **description**: Optional description text
-- **limit_usd**: Optional spending limit in USD
-- **reset_interval**: Optional reset frequency (daily, weekly, or monthly)
-- **allowed_providers**: Optional list of provider IDs
-- **allowed_models**: Optional array of model canonical_slugs
-- **enforce_zdr**: Optional zero data retention enforcement flag
-- **created_at**: ISO 8601 creation timestamp
-- **updated_at**: Optional ISO 8601 last modification timestamp
-
-### Error Responses
-
-- **401**: Missing or invalid authentication credentials
-- **404**: Specified guardrail does not exist
-- **500**: Internal server error
+| Code | Description |
+|------|-------------|
+| 401 | Unauthorized - Missing or invalid authentication |
+| 404 | Not Found - Guardrail does not exist |
+| 500 | Internal Server Error |
 
 ## Code Examples
 
-The documentation includes implementation examples in Python, JavaScript, Go, Ruby, Java, PHP, C#, and Swift, all using the same request structure with appropriate HTTP client libraries for each language.
+### Python
+
+```python
+import requests
+url = "https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000"
+headers = {"Authorization": "Bearer <token>"}
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+### JavaScript
+
+```javascript
+const url = 'https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000';
+const options = {method: 'GET', headers: {Authorization: 'Bearer <token>'}};
+try {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  console.log(data);
+} catch (error) {
+  console.error(error);
+}
+```
+
+### Go
+
+```go
+package main
+import (
+	"fmt"
+	"net/http"
+	"io"
+)
+func main() {
+	url := "https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000"
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Authorization", "Bearer <token>")
+	res, _ := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	fmt.Println(res)
+	fmt.Println(string(body))
+}
+```
+
+### Ruby
+
+```ruby
+require 'uri'
+require 'net/http'
+url = URI("https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000")
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true
+request = Net::HTTP::Get.new(url)
+request["Authorization"] = 'Bearer <token>'
+response = http.request(request)
+puts response.read_body
+```
+
+### Java
+
+```java
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+HttpResponse<String> response = Unirest.get("https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000")
+  .header("Authorization", "Bearer <token>")
+  .asString();
+```
+
+### PHP
+
+```php
+<?php
+require_once('vendor/autoload.php');
+$client = new \GuzzleHttp\Client();
+$response = $client->request('GET', 'https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000', [
+  'headers' => [
+    'Authorization' => 'Bearer <token>',
+  ],
+]);
+echo $response->getBody();
+```
+
+### C#
+
+```csharp
+using RestSharp;
+var client = new RestClient("https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000");
+var request = new RestRequest(Method.GET);
+request.AddHeader("Authorization", "Bearer <token>");
+IRestResponse response = client.Execute(request);
+```
+
+### Swift
+
+```swift
+import Foundation
+let headers = ["Authorization": "Bearer <token>"]
+let request = NSMutableURLRequest(url: NSURL(string: "https://openrouter.ai/api/v1/guardrails/550e8400-e29b-41d4-a716-446655440000")! as URL,
+                                        cachePolicy: .useProtocolCachePolicy,
+                                    timeoutInterval: 10.0)
+request.httpMethod = "GET"
+request.allHTTPHeaderFields = headers
+let session = URLSession.shared
+let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+  if (error != nil) {
+    print(error as Any)
+  } else {
+    let httpResponse = response as? HTTPURLResponse
+    print(httpResponse)
+  }
+})
+dataTask.resume()
+```

@@ -1,126 +1,171 @@
-# OpenRouter FAQ - Complete Documentation
+# Frequently Asked Questions
 
-## Getting Started
+Common questions about OpenRouter
 
-**Why use OpenRouter?**
-OpenRouter provides unified API access to major LLM models with aggregated billing, analytics, and provider pass-through pricing without markup. It offers improved uptime through provider fallbacks while maintaining direct provider rates.
+---
 
-**Getting Started Steps**
-Create an account, add credits on the Credits page, then access the chat interface or create API keys for programmatic use. Pricing varies by model and provider per million tokens.
+## Getting started
 
-**Support Channels**
-Technical support is available through the Discord community #help forum. Billing and account questions should be directed to support@openrouter.ai.
+**Why should I use OpenRouter?**
 
-**Billing Overview**
-"For each model we have the pricing displayed per million tokens. There is usually a different price for prompt and completion tokens." Costs are calculated and deducted from credits based on actual token usage, viewable in the Activity tab.
+OpenRouter provides a unified API to access all the major LLM models on the market with aggregated billing and usage analytics. The platform passes through underlying provider pricing while pooling uptime for better reliability.
+
+**How do I get started with OpenRouter?**
+
+Create an account, add credits on the Credits page, then use either the chat interface or create API keys for the API.
+
+**How do I get support?**
+
+Technical support is available via Discord (#help forum); billing questions go to support@openrouter.ai.
+
+**How do I get billed for my usage on OpenRouter?**
+
+Pricing is displayed per million tokens with different rates for prompt and completion tokens. Costs are deducted from credits based on actual token usage reported by providers.
 
 ---
 
 ## Pricing and Fees
 
-**Credit Purchase Fees**
-OpenRouter charges fees when purchasing credits (specific rates apply for Stripe and cryptocurrency payments). No markup exists on inference pricing—users pay provider rates directly.
+**What are the fees for using OpenRouter?**
 
-**Bring Your Own Key (BYOK)**
-The first monthly BYOK requests are free; subsequent usage incurs a percentage-based fee deducted from OpenRouter credits, enabling direct provider cost management.
+OpenRouter charges a fee when purchasing credits and passes through provider pricing without markup. Crypto payments have a separate fee structure.
+
+**Is there a fee for using my own provider keys (BYOK)?**
+
+Free tier available monthly; subsequent usage charged as a percentage of standard OpenRouter costs, deducted from credits.
 
 ---
 
 ## Models and Providers
 
-**Available Models**
-"OpenRouter provides access to a wide variety of LLM models, including frontier models from major AI labs." Browse the models page or use the models API for complete listings.
+**What LLM models does OpenRouter support?**
 
-**Model Variants**
-Static variants (`:free`, `:extended`, `:exacto`, `:thinking`) apply to specific models. Dynamic variants (`:online`, `:nitro`, `:floor`) work across all models, adjusting routing behavior and optimization focus.
+Access to a wide variety of LLM models, including frontier models from major AI labs. Complete list available at the [models browser](https://openrouter.ai/models) or via the models API.
 
-**Provider Integration**
-Inference providers can apply for listing by reviewing requirements on the Providers page or contacting OpenRouter via email.
+**How frequently are new models added?**
 
-**Latency and Fallbacks**
-Each model displays latency and throughput metrics across providers. If a provider fails, "OpenRouter will automatically fall back to the next provider" transparently, enhancing production reliability.
+Models added as quickly as possible, often through lab partnerships. User requests welcome on Discord.
+
+**What are model variants?**
+
+Static variants (`:free`, `:extended`, `:exacto`, `:thinking`) apply to specific models. Dynamic variants (`:online`, `:nitro`, `:floor`) available for all models and modify routing behavior.
+
+**I am an inference provider, how can I get listed on OpenRouter?**
+
+See requirements at the [Providers page](https://openrouter.ai/docs/guides/guides/for-providers); contact via email.
+
+**What is the expected latency/response time for different models?**
+
+Latency and throughput data shown per model/provider. Use `:nitro` variant to optimize for speed.
+
+**How does model fallback work if a provider is unavailable?**
+
+If a provider returns an error OpenRouter will automatically fall back to the next provider transparently to users.
 
 ---
 
 ## API Technical Specifications
 
-**Authentication Methods**
-Three methods are supported: cookie-based (web interface), API keys (Bearer tokens), and Management API keys for programmatic key administration.
+**What authentication methods are supported?**
 
-**Rate Limits**
-Free model limits depend on purchased credits. With sufficient credit purchases, free models allow higher daily request limits; otherwise, standard free tier restrictions apply.
+Cookie-based (web interface), API keys (Bearer tokens), and Management API keys for programmatic key management.
 
-**API Endpoints**
-OpenRouter implements OpenAI API specifications for `/completions` and `/chat/completions` endpoints, plus additional endpoints like `/api/v1/models`.
+**How are rate limits calculated?**
 
-**Supported Formats**
-"The API supports text, images, and PDFs." Images can be URLs or base64-encoded; PDFs work as URLs or base64 data across all models.
+Free models limited by purchased credits threshold; free tier users face daily request limits. Documented in [rate limits documentation](https://openrouter.ai/docs/api/reference/limits).
 
-**Streaming**
-Streaming uses server-sent events (SSE) for real-time token delivery via the `stream: true` request parameter.
+**What API endpoints are available?**
 
-**SDK Support**
-OpenRouter functions as a drop-in OpenAI replacement, supporting any OpenAI-compatible SDKs and multiple frameworks/integrations.
+OpenRouter implements the OpenAI API specification for `/completions` and `/chat/completions` endpoints plus additional endpoints like `/api/v1/models`.
+
+**What are the supported formats?**
+
+The API supports text, images, and PDFs as URLs or base64 encoded data.
+
+**How does streaming work?**
+
+Streaming uses server-sent events (SSE) for real-time token delivery via the `stream: true` parameter.
+
+**What SDK support is available?**
+
+OpenRouter is a drop-in replacement for OpenAI compatible with standard SDKs and frameworks.
 
 ---
 
 ## Privacy and Data Logging
 
-**Data Collection**
-"We log basic request metadata (timestamps, model used, token counts). Prompt and completion are not logged by default." An opt-in setting provides a 1% usage discount in exchange for logging prompts and completions.
+**What data is logged during API use?**
 
-**Chatroom Privacy**
-Chatroom conversations are stored locally on devices without cross-device synchronization. Export/import functionality is available through settings.
+We log basic request metadata (timestamps, model used, token counts). Prompt and completion are not logged by default. Opt-in logging available for 1% discount.
 
-**Third-Party Sharing**
-OpenRouter proxies requests to providers and negotiates no-logging agreements when possible. Providers with logging policies require explicit opt-in via privacy settings to route requests.
+**What data is logged during Chatroom use?**
+
+Same privacy as API. All conversations in the chatroom are stored locally on your device and don't sync across devices.
+
+**What third-party sharing occurs?**
+
+OpenRouter proxies requests to providers while working to prevent logging/training use. Non-logging providers automatically routed unless training toggle enabled.
 
 ---
 
 ## Credit and Billing Systems
 
-**Purchase Options**
-OpenRouter uses a dollar-denominated credit system with manual top-up or automatic replenishment options.
+**What purchase options exist?**
 
-**Credit Expiration**
-"Per our terms, we reserve the right to expire unused credits after one year of purchase."
+Credit system in US dollars with manual top-up or auto-replenishment options.
 
-**Missing Credits**
-Stripe delays may require up to one hour; check for receipt emails and successful charges. Reach out to support@openrouter.ai for unresolved issues. Cryptocurrency payments require email support.
+**Do credits expire?**
 
-**Refund Policy**
-"Refunds for unused Credits may be requested within twenty-four (24) hours from the time the transaction was processed." Platform fees are non-refundable; cryptocurrency refunds are unavailable.
+Per our terms, we reserve the right to expire unused credits after one year of purchase.
 
-**Usage Monitoring**
-The Activity page filters usage by model, provider, and API key. The credits API provides live balance information.
+**My credits haven't showed up in my account**
 
-**Free Tier**
-New users receive limited free access. Free models have low rate limits and aren't suitable for production. Purchasing credits increases free model limits significantly.
+Allow up to one hour for Stripe processing; contact support@openrouter.ai if unresolved or for crypto payments.
 
-**Volume Discounts**
-Currently unavailable, though exceptional use cases may qualify—contact OpenRouter via email.
+**What's the refund policy?**
 
-**Payment Methods**
-"We accept all major credit cards, AliPay and cryptocurrency payments in USDC." PayPal integration is planned.
+Refunds for unused Credits may be requested within twenty-four (24) hours from the time the transaction was processed. Unused credits beyond 24 hours become non-refundable; platform fees non-refundable; crypto never refundable.
 
-**Revenue Model**
-OpenRouter charges small credit purchase fees while maintaining provider pricing without markup.
+**How to monitor credit usage?**
+
+The Activity page allows users to view their historic usage and filter by model, provider, and API key. Credits API available for live balance data.
+
+**What free tier options exist?**
+
+New users receive small free allowance. Free models available with low rate limits and automatic router option.
+
+**How do volume discounts work?**
+
+OpenRouter does not currently offer volume discounts but exceptional cases considered via email.
+
+**What payment methods are accepted?**
+
+We accept all major credit cards, AliPay and cryptocurrency payments in USDC with PayPal integration in development.
+
+**How does OpenRouter make money?**
+
+We charge a small fee when purchasing credits while never marking up provider pricing.
 
 ---
 
 ## Account Management
 
-**Account Deletion**
-Navigate to Settings > Manage Account > Security tab to delete accounts. Unused credits cannot be recovered post-deletion.
+**How can I delete my account?**
 
-**Team Access**
-"Organization management information can be found in our organization management documentation."
+Go to Settings > Manage Account > Security tab to delete. Unused credits cannot be reclaimed.
 
-**Analytics**
-The Activity dashboard provides real-time usage metrics; additional reports available upon request.
+**How does team access work?**
 
-**Support Contact**
-Email support@openrouter.ai for account and billing inquiries.
+Information available in [organization management documentation](https://openrouter.ai/docs/use-cases/organization-management).
 
-**Bug Reports**
-Post bug reports and change requests in the Discord community.
+**What analytics are available?**
+
+Our activity dashboard provides real-time usage metrics with custom reports available upon request.
+
+**How can I contact support?**
+
+Account/billing: support@openrouter.ai; technical: Discord community.
+
+**How can I file a bug report or change request for OpenRouter?**
+
+Post in Discord.

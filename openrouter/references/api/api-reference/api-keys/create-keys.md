@@ -1,43 +1,243 @@
-# Create a new API key
+# Create API Key
 
-## Endpoint Overview
+Create a new API key for the authenticated user. Management key required.
 
-POST `https://openrouter.ai/api/v1/keys`
+## Endpoint
 
-The endpoint allows authenticated users to generate a new API key. A management key is required for this operation.
+**Method:** POST
+**URL:** `https://openrouter.ai/api/v1/keys`
 
-## Request Parameters
+## Authentication
 
-The request body accepts the following JSON properties:
+Management key required as Bearer token in Authorization header.
 
-- **name** (required, string): Identifier for the new API key
-- **limit** (optional, number): Maximum spending threshold in USD
-- **limit_reset** (optional): Frequency for limit resets--choose from "daily", "weekly", "monthly", or null. Resets occur at midnight UTC
-- **include_byok_in_limit** (optional, boolean): Controls whether external BYOK usage counts toward the spending limit
-- **expires_at** (optional, ISO 8601 string): UTC expiration timestamp for the key; non-UTC timezones are rejected
+## Request Body
 
-Authentication uses a bearer token in the Authorization header.
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Name for the new API key |
+| limit | number\|null | No | Optional spending limit for the API key in USD |
+| limit_reset | string\|null | No | Type of limit reset for the API key (daily, weekly, monthly, or null for no reset). Resets happen automatically at midnight UTC, and weeks are Monday through Sunday. |
+| include_byok_in_limit | boolean | No | Whether to include BYOK usage in the limit |
+| expires_at | string\|null | No | Optional ISO 8601 UTC timestamp when the API key should expire |
 
-## Response Details
+## Response (201 Created)
 
-A successful 201 response includes:
+| Field | Type | Description |
+|-------|------|-------------|
+| key | string | The actual API key string (only shown once) |
+| data.hash | string | Unique hash identifier |
+| data.name | string | Name of the API key |
+| data.label | string | Human-readable label |
+| data.disabled | boolean | Whether disabled |
+| data.limit | number\|null | Spending limit in USD |
+| data.limit_remaining | number\|null | Remaining limit in USD |
+| data.limit_reset | string\|null | Reset type |
+| data.include_byok_in_limit | boolean | BYOK inclusion status |
+| data.usage | number | Total OpenRouter credit usage (USD) |
+| data.usage_daily | number | Daily OpenRouter credit usage |
+| data.usage_weekly | number | Weekly usage |
+| data.usage_monthly | number | Monthly usage |
+| data.byok_usage | number | Total external BYOK usage |
+| data.byok_usage_daily | number | Daily BYOK usage |
+| data.byok_usage_weekly | number | Weekly BYOK usage |
+| data.byok_usage_monthly | number | Monthly BYOK usage |
+| data.created_at | string | ISO 8601 creation timestamp |
+| data.updated_at | string\|null | ISO 8601 update timestamp |
+| data.expires_at | string\|null | Expiration timestamp |
 
-- **key**: The actual API key string (displayed only once)
-- **data**: Complete key metadata including:
-  - hash, name, label, disabled status
-  - Current and remaining limits
-  - Usage metrics (total, daily, weekly, monthly for both standard and BYOK)
-  - Creation and update timestamps
-  - Expiration information
+## Error Responses
 
-## HTTP Status Codes
-
-- 201: Key created successfully
-- 400: Invalid request parameters
-- 401: Missing or invalid authentication
-- 429: Rate limit exceeded
-- 500: Server error
+- **400:** Bad Request - Invalid parameters
+- **401:** Unauthorized - Missing or invalid authentication
+- **429:** Too Many Requests - Rate limit exceeded
+- **500:** Internal Server Error
 
 ## Code Examples
 
-Examples are provided in Python, JavaScript, Go, Ruby, Java, PHP, C#, and Swift, all demonstrating creation of a key named "Analytics Service Key" with a $150 monthly limit expiring June 30, 2028.
+### Python
+
+```python
+import requests
+
+url = "https://openrouter.ai/api/v1/keys"
+
+payload = {
+    "name": "Analytics Service Key",
+    "limit": 150,
+    "limit_reset": "monthly",
+    "include_byok_in_limit": True,
+    "expires_at": "2028-06-30T23:59:59Z"
+}
+headers = {
+    "Authorization": "Bearer <token>",
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+
+print(response.json())
+```
+
+### JavaScript
+
+```javascript
+const url = 'https://openrouter.ai/api/v1/keys';
+const options = {
+  method: 'POST',
+  headers: {Authorization: 'Bearer <token>', 'Content-Type': 'application/json'},
+  body: '{"name":"Analytics Service Key","limit":150,"limit_reset":"monthly","include_byok_in_limit":true,"expires_at":"2028-06-30T23:59:59Z"}'
+};
+
+try {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  console.log(data);
+} catch (error) {
+  console.error(error);
+}
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"fmt"
+	"strings"
+	"net/http"
+	"io"
+)
+
+func main() {
+
+	url := "https://openrouter.ai/api/v1/keys"
+
+	payload := strings.NewReader("{\n  \"name\": \"Analytics Service Key\",\n  \"limit\": 150,\n  \"limit_reset\": \"monthly\",\n  \"include_byok_in_limit\": true,\n  \"expires_at\": \"2028-06-30T23:59:59Z\"\n}")
+
+	req, _ := http.NewRequest("POST", url, payload)
+
+	req.Header.Add("Authorization", "Bearer <token>")
+	req.Header.Add("Content-Type", "application/json")
+
+	res, _ := http.DefaultClient.Do(req)
+
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+
+	fmt.Println(res)
+	fmt.Println(string(body))
+
+}
+```
+
+### Ruby
+
+```ruby
+require 'uri'
+require 'net/http'
+
+url = URI("https://openrouter.ai/api/v1/keys")
+
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true
+
+request = Net::HTTP::Post.new(url)
+request["Authorization"] = 'Bearer <token>'
+request["Content-Type"] = 'application/json'
+request.body = "{\n  \"name\": \"Analytics Service Key\",\n  \"limit\": 150,\n  \"limit_reset\": \"monthly\",\n  \"include_byok_in_limit\": true,\n  \"expires_at\": \"2028-06-30T23:59:59Z\"\n}"
+
+response = http.request(request)
+puts response.read_body
+```
+
+### Java
+
+```java
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+
+HttpResponse<String> response = Unirest.post("https://openrouter.ai/api/v1/keys")
+  .header("Authorization", "Bearer <token>")
+  .header("Content-Type", "application/json")
+  .body("{\n  \"name\": \"Analytics Service Key\",\n  \"limit\": 150,\n  \"limit_reset\": \"monthly\",\n  \"include_byok_in_limit\": true,\n  \"expires_at\": \"2028-06-30T23:59:59Z\"\n}")
+  .asString();
+```
+
+### PHP
+
+```php
+<?php
+require_once('vendor/autoload.php');
+
+$client = new \GuzzleHttp\Client();
+
+$response = $client->request('POST', 'https://openrouter.ai/api/v1/keys', [
+  'body' => '{
+  "name": "Analytics Service Key",
+  "limit": 150,
+  "limit_reset": "monthly",
+  "include_byok_in_limit": true,
+  "expires_at": "2028-06-30T23:59:59Z"
+}',
+  'headers' => [
+    'Authorization' => 'Bearer <token>',
+    'Content-Type' => 'application/json',
+  ],
+]);
+
+echo $response->getBody();
+```
+
+### C#
+
+```csharp
+using RestSharp;
+
+var client = new RestClient("https://openrouter.ai/api/v1/keys");
+var request = new RestRequest(Method.POST);
+request.AddHeader("Authorization", "Bearer <token>");
+request.AddHeader("Content-Type", "application/json");
+request.AddParameter("application/json", "{\n  \"name\": \"Analytics Service Key\",\n  \"limit\": 150,\n  \"limit_reset\": \"monthly\",\n  \"include_byok_in_limit\": true,\n  \"expires_at\": \"2028-06-30T23:59:59Z\"\n}", ParameterType.RequestBody);
+IRestResponse response = client.Execute(request);
+```
+
+### Swift
+
+```swift
+import Foundation
+
+let headers = [
+  "Authorization": "Bearer <token>",
+  "Content-Type": "application/json"
+]
+let parameters = [
+  "name": "Analytics Service Key",
+  "limit": 150,
+  "limit_reset": "monthly",
+  "include_byok_in_limit": true,
+  "expires_at": "2028-06-30T23:59:59Z"
+] as [String : Any]
+
+let postData = JSONSerialization.data(withJSONObject: parameters, options: [])
+
+let request = NSMutableURLRequest(url: NSURL(string: "https://openrouter.ai/api/v1/keys")! as URL,
+                                        cachePolicy: .useProtocolCachePolicy,
+                                    timeoutInterval: 10.0)
+request.httpMethod = "POST"
+request.allHTTPHeaderFields = headers
+request.httpBody = postData as Data
+
+let session = URLSession.shared
+let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+  if (error != nil) {
+    print(error as Any)
+  } else {
+    let httpResponse = response as? HTTPURLResponse
+    print(httpResponse)
+  }
+})
+
+dataTask.resume()
+```

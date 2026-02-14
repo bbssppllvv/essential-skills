@@ -1,42 +1,167 @@
 # Get Total Count of Available Models
 
-## Endpoint Overview
+`GET https://openrouter.ai/api/v1/models/count`
 
-The `/models/count` endpoint retrieves the total number of models available through OpenRouter's API using a GET request to `https://openrouter.ai/api/v1/models/count`.
+Retrieves the total number of models available through the OpenRouter API.
 
-## Authentication
+## Request
 
-This endpoint requires bearer token authentication via the `Authorization` header. The API key must be provided in the format: `Bearer <token>`.
+### Headers
 
-## API Response
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| Authorization | string | Yes | API key as bearer token in Authorization header |
 
-**Success Response (200):**
-The endpoint returns a JSON object with a nested data structure:
+## Response
+
+### Status Codes
+
+| Code | Description |
+|------|-------------|
+| 200 | Returns the total count of available models |
+| 500 | Internal Server Error |
+
+### Response Schema (200)
 
 ```json
 {
   "data": {
-    "count": <number>
+    "count": 0
   }
 }
 ```
 
-The `count` property contains the total quantity of available models as a numeric value.
+| Field | Type | Description |
+|-------|------|-------------|
+| data.count | number | Total number of available models |
 
-**Error Response (500):**
-Internal server errors return a 500 status code without content.
+## Code Examples
 
-## Implementation Examples
+### Python
 
-Code samples are provided in multiple programming languages:
+```python
+import requests
 
-- **Python**: Uses the `requests` library for HTTP GET operations
-- **JavaScript**: Implements the endpoint using the Fetch API
-- **Go**: Demonstrates usage with the standard `net/http` package
-- **Ruby**: Shows implementation with the built-in `Net::HTTP` module
-- **Java**: Uses the Unirest HTTP client library
-- **PHP**: Implements the request through Guzzle HTTP client
-- **C#**: Demonstrates usage with the RestSharp library
-- **Swift**: Shows implementation using Foundation's URLSession
+url = "https://openrouter.ai/api/v1/models/count"
+headers = {"Authorization": "Bearer <token>"}
+response = requests.get(url, headers=headers)
+print(response.json())
+```
 
-All examples follow the same pattern: constructing a GET request with proper authorization headers and processing the JSON response.
+### JavaScript
+
+```javascript
+const url = 'https://openrouter.ai/api/v1/models/count';
+const options = {method: 'GET', headers: {Authorization: 'Bearer <token>'}};
+
+try {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  console.log(data);
+} catch (error) {
+  console.error(error);
+}
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"io"
+)
+
+func main() {
+	url := "https://openrouter.ai/api/v1/models/count"
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Add("Authorization", "Bearer <token>")
+	res, _ := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+	body, _ := io.ReadAll(res.Body)
+	fmt.Println(res)
+	fmt.Println(string(body))
+}
+```
+
+### Ruby
+
+```ruby
+require 'uri'
+require 'net/http'
+
+url = URI("https://openrouter.ai/api/v1/models/count")
+http = Net::HTTP.new(url.host, url.port)
+http.use_ssl = true
+request = Net::HTTP::Get.new(url)
+request["Authorization"] = 'Bearer <token>'
+response = http.request(request)
+puts response.read_body
+```
+
+### Java
+
+```java
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+
+HttpResponse<String> response = Unirest.get("https://openrouter.ai/api/v1/models/count")
+  .header("Authorization", "Bearer <token>")
+  .asString();
+```
+
+### PHP
+
+```php
+<?php
+require_once('vendor/autoload.php');
+
+$client = new \GuzzleHttp\Client();
+
+$response = $client->request('GET', 'https://openrouter.ai/api/v1/models/count', [
+  'headers' => [
+    'Authorization' => 'Bearer <token>',
+  ],
+]);
+
+echo $response->getBody();
+```
+
+### C#
+
+```csharp
+using RestSharp;
+
+var client = new RestClient("https://openrouter.ai/api/v1/models/count");
+var request = new RestRequest(Method.GET);
+request.AddHeader("Authorization", "Bearer <token>");
+IRestResponse response = client.Execute(request);
+```
+
+### Swift
+
+```swift
+import Foundation
+
+let headers = ["Authorization": "Bearer <token>"]
+
+let request = NSMutableURLRequest(url: NSURL(string: "https://openrouter.ai/api/v1/models/count")! as URL,
+                                        cachePolicy: .useProtocolCachePolicy,
+                                    timeoutInterval: 10.0)
+request.httpMethod = "GET"
+request.allHTTPHeaderFields = headers
+
+let session = URLSession.shared
+let dataTask = session.dataTask(with: request as URLRequest, completionHandler: { (data, response, error) -> Void in
+  if (error != nil) {
+    print(error as Any)
+  } else {
+    let httpResponse = response as? HTTPURLResponse
+    print(httpResponse)
+  }
+})
+
+dataTask.resume()
+```

@@ -1,45 +1,75 @@
-# Infisical Integration for OpenRouter API Key Management
+---
+title: Infisical
+description: OpenRouter API key management and automatic rotation with Infisical
+---
 
-## Overview
+# Infisical Integration
 
-Infisical serves as a secrets management platform enabling teams to securely store, synchronize, and rotate secrets across infrastructure. The platform's OpenRouter integration facilitates "automatic rotation of API keys on a schedule" while maintaining zero-downtime operations.
+Infisical is a secrets management platform that helps teams securely store, sync, and rotate secrets across their infrastructure. With Infisical's OpenRouter integration, you can automatically rotate your API keys on a schedule, ensuring your credentials stay secure with zero-downtime rotation.
 
 ## Prerequisites
 
-Users must obtain an OpenRouter Management API key before proceeding. These specialized keys are "used only for key management operations (create, list, delete keys) and cannot be used for model completion requests."
+You need an OpenRouter **Management API key**. These are special keys used only for key management operations (create, list, delete keys) and cannot be used for model completion requests.
 
-### Obtaining a Management API Key
+### Creating a Management API Key
 
-Access the OpenRouter Settings Management API Keys section, create a new key, and store the generated credential securely for use in Infisical configuration.
+1. Navigate to [OpenRouter Settings](https://openrouter.ai/settings)
+2. Go to the **Management API Keys** section
+3. Click **Create New Key**
+4. Complete the key creation flow
+5. Copy the generated Management API key and store it securely -- you will need it when creating the Infisical connection
 
-## Connection Setup
+## Setup
 
-Navigate to Infisical's Organization Settings and App Connections section. Select Add Connection, choose OpenRouter, and input your Management API Key along with a connection name. Infisical validates the credentials against OpenRouter's API.
+### Step 1: Create the OpenRouter Connection in Infisical
 
-## Rotation Configuration
+1. In the Infisical dashboard, navigate to **Organization Settings > App Connections**
+2. Click **Add Connection** and select **OpenRouter**
+3. Enter your Management API Key, an optional description, and a connection name
+4. Click **Create** -- Infisical will validate the key against OpenRouter's API
 
-### Key Rotation Parameters
+### Step 2: Configure Automatic Key Rotation
 
-The configuration includes several essential settings:
+1. Navigate to your **Secret Manager Project's Dashboard** in Infisical
+2. Select **Add Secret Rotation** from the actions dropdown
+3. Choose the **OpenRouter API Key** option
 
-- **Auto-Rotation**: Controls whether keys rotate automatically according to the specified interval
-- **Rotation Schedule**: Sets the local time and interval (in days) for rotation execution
-- **Connection Selection**: Designates which OpenRouter connection manages key operations
-- **Key Name**: Display name for the key in OpenRouter
-- **Spending Limits**: Optional USD limit with daily, weekly, or monthly reset cycles
-- **BYOK Integration**: Determines whether Bring Your Own Key usage counts toward spending limits
+## Configuration Parameters
+
+### Scheduling
+
+| Parameter | Description |
+|---|---|
+| **Auto-Rotation Enabled** | Toggle automatic scheduled rotation on or off |
+| **Rotate At** | Local time of day when rotation executes |
+| **Rotation Interval** | Number of days between rotations |
+
+### Connection & Key Properties
+
+| Parameter | Description | Required |
+|---|---|---|
+| **OpenRouter Connection** | Selects which Management API key connection to use | Yes |
+| **Key Name** | Display name for the key in OpenRouter | Yes |
+| **Limit** | Optional USD spending cap for the key | No |
+| **Limit Reset Frequency** | How often the spending limit resets: daily, weekly, or monthly | No |
+| **Include BYOK in Limit** | Whether usage from your own provider keys counts toward the spending limit | No |
 
 ### Secret Storage
 
-Specify the Infisical secret name where rotated API keys will be stored and accessed.
+| Parameter | Description |
+|---|---|
+| **Map to Secret Name** | The Infisical secret path where the rotated key will be stored |
 
-## BYOK and Spending Limits
+## BYOK Limit Behavior
 
-BYOK allows using personal provider API keys (OpenAI, Anthropic, etc.) while paying providers directly. The "Include BYOK in limit" setting controls whether such usage counts toward the key's spending limit. When disabled, only OpenRouter credits are tracked; when enabled, both usage types are combined.
+The **Include BYOK in limit** option controls whether Bring Your Own Key (BYOK) usage counts toward your key's spending limit:
+
+- **When disabled**: Only OpenRouter credit usage counts toward the limit and BYOK usage is tracked separately.
+- **When enabled**: Usage from your own provider keys is included in the limit.
 
 ## Additional Resources
 
-- Infisical OpenRouter Connection documentation
-- Infisical OpenRouter API Key Rotation documentation
-- OpenRouter Management Keys guide
-- OpenRouter Quick Start Guide
+- [Infisical OpenRouter Connection Guide](https://infisical.com/docs/integrations/app-connections/openrouter)
+- [Infisical API Key Rotation Documentation](https://infisical.com/docs)
+- [OpenRouter Management Keys](https://openrouter.ai/settings)
+- [OpenRouter Quick Start](https://openrouter.ai/docs/quickstart)

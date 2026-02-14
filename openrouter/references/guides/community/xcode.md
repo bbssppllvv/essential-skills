@@ -1,48 +1,69 @@
-# Xcode Integration with OpenRouter Apple Intelligence
+---
+title: Xcode
+description: Using OpenRouter with Apple Intelligence in Xcode
+---
 
-## Overview
+# Xcode Integration
 
-OpenRouter enables developers to integrate hundreds of AI models directly into Xcode 26's Apple Intelligence features. This setup provides access to models from Anthropic, Google, Meta, OpenAI, and other providers without leaving the development environment.
+Apple Intelligence in Xcode 26 provides built-in AI assistance for coding. By integrating OpenRouter, you can access hundreds of AI models directly in your Xcode development environment, going far beyond the default ChatGPT integration.
 
-## Requirements
+This enables access to models from Anthropic, Google, Meta, OpenAI, and many other providers without leaving your development environment.
 
-Apple Intelligence in Xcode is currently in beta and requires:
-- macOS Tahoe 26.0 Beta or later
-- Xcode 26 beta 4 or later
+## Prerequisites
 
-## Configuration Steps
+The Apple Intelligence feature in Xcode is currently in Beta and requires:
+
+- **macOS Tahoe 26.0 Beta** or later
+- **Xcode 26 beta 4** or later
+
+## Setup Instructions
 
 ### Step 1: Access Intelligence Settings
+
 Navigate to **Settings > Intelligence > Add a Model Provider** in macOS system preferences.
 
 ### Step 2: Configure OpenRouter Provider
-Enter these details in the "Add a Model Provider" dialog:
+
+Enter the following details in the "Add a Model Provider" dialog:
 
 | Field | Value |
-|-------|-------|
-| URL | `https://openrouter.ai/api` |
-| API Key Header | `Authorization` |
-| API Key | `Bearer YOUR_API_KEY_HERE` |
-| Description | `OpenRouter` |
+|---|---|
+| **URL** | `https://openrouter.ai/api` |
+| **API Key Header** | `Authorization` |
+| **API Key** | `Bearer YOUR_API_KEY_HERE` |
+| **Description** | `OpenRouter` (or your preferred name) |
 
-**Note:** Omit `/v1` from the endpoint URL, which differs from typical direct API calls.
+> **Note:** Do not include `/v1` at the end of the URL. Use `https://openrouter.ai/api` exactly. This differs from typical direct API calls.
+
+Your API key should start with `sk-or-v1-`. Enter it in the format `Bearer YOUR_API_KEY_HERE`, substituting your actual OpenRouter key.
 
 ### Step 3: Browse and Bookmark Models
-After configuration, access the model list through OpenRouter. The platform offers hundreds of options; bookmarking favorites places them at the top for quick access.
 
-### Step 4: Begin Development
-Open the chat interface and start using your selected models within Xcode.
+After configuration, you can view all available models from OpenRouter. Bookmarked models will appear at the top of the list, making them easily accessible from within the pane whenever you need them.
 
-## Available Capabilities
+Available providers include:
 
-The integration supports:
-- Intelligent code completion suggestions
-- Code explanation and analysis
-- Refactoring assistance
-- Automated documentation generation
+- Anthropic Claude
+- Google Gemini
+- Meta Llama
+- OpenAI GPT
+- And hundreds of additional options
+
+### Step 4: Start Using AI in Xcode
+
+Return to the chat interface and begin chatting with your selected models in Xcode.
+
+## Apple Intelligence Features
+
+Supported capabilities include:
+
+- **Code Completion**: Receive intelligent code suggestions as you type
+- **Code Explanation**: Ask questions about code to understand how it works
+- **Refactoring Assistance**: Get guidance on improving code structure
+- **Documentation Generation**: Generate comments and documentation for your code
 
 ## Additional Resources
 
-- [Apple's Intelligence Guide](https://developer.apple.com/documentation/Xcode/writing-code-with-intelligence-in-xcode)
-- [OpenRouter Quick Start](https://openrouter.ai/docs/quickstart)
-- [Model Browser](https://openrouter.ai/models)
+- [Writing Code with Intelligence in Xcode](https://developer.apple.com/documentation/Xcode/writing-code-with-intelligence-in-xcode) - Apple's official guide
+- [OpenRouter Quick Start](https://openrouter.ai/docs/quickstart) - Getting started with OpenRouter
+- [Browse OpenRouter Models](https://openrouter.ai/models) - Available models catalog

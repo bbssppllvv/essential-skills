@@ -1,52 +1,55 @@
-# Sentry Integration Guide
+# Sentry
 
-## Overview
+Send traces to Sentry
 
-Sentry serves as an application monitoring platform enabling developers to identify and resolve issues in real-time. The platform includes AI monitoring capabilities for tracking large language model performance and errors.
+[Sentry](https://sentry.io) is an application monitoring platform that helps developers identify and fix issues in real-time. With Sentry's AI monitoring capabilities, you can track LLM performance and errors.
 
-## Setup Instructions
+## Step 1: Get your Sentry OTLP endpoint and DSN
 
-### Step 1: Obtain Sentry Credentials
+In Sentry, navigate to your project's SDK setup:
 
-Within your Sentry project settings, retrieve two essential items:
+1. Log in to your Sentry account
+2. Go to **Settings > Projects > [Your Project] > SDK Setup > Client Keys (DSN)**
+3. Click on the **OpenTelemetry** tab
+4. Copy the **OTLP Traces Endpoint** URL (ends with `/v1/traces`)
+5. Copy your **DSN** from the same page
 
-1. Navigate to **Settings > Projects > [Your Project] > SDK Setup > Client Keys (DSN)**
-2. Select the **OpenTelemetry** tab
-3. Copy the **OTLP Traces Endpoint** URL (format: `.../v1/traces`)
-4. Copy your **DSN** identifier
+## Step 2: Enable Broadcast in OpenRouter
 
-### Step 2: Activate Broadcast Feature
+Go to [Settings > Observability](https://openrouter.ai/settings/observability) and toggle **Enable Broadcast**.
 
-Navigate to [Settings > Observability](https://openrouter.ai/settings/observability) and engage the **Enable Broadcast** toggle.
+## Step 3: Configure Sentry
 
-### Step 3: Configure Sentry Settings
+Click the edit icon next to **Sentry** and enter:
 
-Select the edit option adjacent to **Sentry** and input:
+- **OTLP Traces Endpoint**: The OTLP endpoint URL from Sentry (e.g., `https://o123.ingest.us.sentry.io/api/456/integration/otlp/v1/traces`)
+- **Sentry DSN**: Your Sentry DSN (e.g., `https://abc123@o123.ingest.us.sentry.io/456`)
 
-- **OTLP Traces Endpoint**: Your Sentry OTLP URL
-- **Sentry DSN**: Your project's DSN identifier
+## Step 4: Test and save
 
-### Step 4: Validate Configuration
+Click **Test Connection** to verify the setup. The configuration only saves if the test passes.
 
-Execute **Test Connection** to confirm proper setup. Settings persist only upon successful testing.
+## Step 5: Send a test trace
 
-### Step 5: Generate Test Trace
+Make an API request through OpenRouter and view the trace in Sentry's Performance or Traces view.
 
-Submit an API request via OpenRouter and observe the resulting trace in Sentry's Performance or Traces interface.
+> Sentry uses OpenTelemetry for trace ingestion. The OTLP endpoint and DSN are both required for proper authentication and trace routing.
 
-## Custom Metadata Support
+## Custom Metadata
 
-OpenTelemetry protocol enables custom metadata transmission as span attributes for filtering and analysis.
+Sentry receives traces via the OTLP protocol. Custom metadata from the `trace` field is sent as span attributes and can be used for filtering and analysis in Sentry's Performance view.
 
-| Metadata Key | Maps To | Purpose |
-|---|---|---|
-| `trace_id` | Trace ID | Consolidate related requests |
-| `trace_name` | Transaction Name | Label root span |
-| `span_name` | Span Description | Identify intermediate spans |
-| `generation_name` | Span Description | Tag LLM generation span |
-| `parent_span_id` | Parent Span ID | Reference existing spans |
+### Supported Metadata Keys
 
-## Configuration Example
+| Key | Sentry Mapping | Description |
+| --- | --- | --- |
+| `trace_id` | Trace ID | Group multiple requests into a single trace |
+| `trace_name` | Transaction Name | Custom name for the root span |
+| `span_name` | Span Description | Name for intermediate spans in the hierarchy |
+| `generation_name` | Span Description | Name for the LLM generation span |
+| `parent_span_id` | Parent Span ID | Link to an existing span in your trace hierarchy |
+
+### Example
 
 ```json
 {
@@ -64,6 +67,13 @@ OpenTelemetry protocol enables custom metadata transmission as span attributes f
 }
 ```
 
-## Privacy Considerations
+### Additional Context
 
-When Privacy Mode is enabled, prompt and completion content remains excluded from trace data. Token usage, costs, timing, model details, and custom metadata transmission continues normally.
+- Custom metadata keys from `trace` are included as span attributes under the `trace.metadata.*` namespace
+- The `user` field maps to `user.id` in span attributes
+- The `session_id` field maps to `session.id` in span attributes
+- Sentry automatically correlates LLM traces with your application's existing error and performance data when using `parent_span_id`
+
+## Privacy Mode
+
+When Privacy Mode is enabled for this destination, prompt and completion content is excluded from traces. All other trace data -- token usage, costs, timing, model information, and custom metadata -- is still sent normally.
