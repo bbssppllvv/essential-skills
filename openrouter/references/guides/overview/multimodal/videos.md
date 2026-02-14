@@ -1,56 +1,298 @@
-# OpenRouter Video Inputs Documentation
+# Video Inputs
+
+Send video files to video-capable models on OpenRouter.
 
 ## Overview
 
-OpenRouter enables sending video files to compatible models through the API using two primary methods: direct URLs for publicly accessible content and base64-encoded data URLs for local or private videos.
+OpenRouter enables sending video files to compatible models through the `/api/v1/chat/completions` API endpoint. The platform supports two video input methods:
 
-## Supported Input Methods
+- **Direct URLs** - Work efficiently for publicly accessible videos without requiring local encoding.
+- **Base64 Data URLs** - Necessary for local files or private videos that aren't publicly accessible.
 
-**Direct URLs**: Recommended for publicly hosted videos as they avoid local encoding overhead.
+## Important Limitations
 
-**Base64 Data URLs**: Required for local files or content requiring privacy protection.
+- Video URL support varies by provider. OpenRouter only sends video URLs to providers that explicitly support them.
+- For instance, Google Gemini on AI Studio accepts only YouTube links, not Vertex AI.
+- Video inputs are currently only supported via the API. Video uploads are not available in the OpenRouter chatroom interface at this time.
 
-**Important limitation**: "Video inputs are currently only supported via the API. Video uploads are not available in the OpenRouter chatroom interface."
+## Supported Video Formats
 
-## Implementation Examples
+| Format | MIME Type    |
+|--------|-------------|
+| MP4    | video/mp4   |
+| MPEG   | video/mpeg  |
+| MOV    | video/mov   |
+| WebM   | video/webm  |
 
-### URL-Based Video Input
+## Best Practices
 
-The API accepts video content via the `/api/v1/chat/completions` endpoint with a `video_url` content type. For Google Gemini on AI Studio, only YouTube links are supported.
+- **Video compression** reduces file size without significant quality loss.
+- **Trim videos** to relevant segments.
+- Consider **lower resolutions** (720p versus 4K) to reduce file size while maintaining usability.
 
-Basic request structure includes:
-- Message role and content array
-- Text prompt component
-- Video URL component specifying the video location
+For optimal results, balance video quality with practical considerations:
 
-### Base64 Encoding Approach
+| Quality        | Resolution | Use Case                  |
+|----------------|------------|---------------------------|
+| High quality   | 1080p+     | Detailed analysis         |
+| Medium quality | 720p       | General tasks             |
+| Lower quality  | 480p       | Basic scene understanding |
 
-Local videos require encoding as data URLs in the format `data:video/[format];base64,[encoded-content]`. Implementation involves reading the file, encoding to base64, and including in the content array.
+## Provider-Specific Considerations
 
-## Technical Specifications
+- **Google Gemini on AI Studio** supports only YouTube links.
+- **Vertex AI** doesn't support video URLs and requires base64-encoded data URLs instead.
 
-**Supported formats**: MP4, MPEG, MOV, WebM
+## Code Examples - Using Video URLs
 
-**Content type**: `video_url` with nested `url` parameter
+### TypeScript SDK
 
-## Provider Considerations
+```typescript
+import { OpenRouter } from '@openrouter/sdk';
 
-Google Gemini's video support varies by deployment:
-- **AI Studio**: YouTube links only
-- **Vertex AI**: Base64 data URLs required (no URL support)
+const openRouter = new OpenRouter({
+  apiKey: '{{API_KEY_REF}}',
+});
 
-## Performance Optimization
+const result = await openRouter.chat.send({
+  model: "{{MODEL}}",
+  messages: [
+    {
+      role: "user",
+      content: [
+        {
+          type: "text",
+          text: "Please describe what's happening in this video.",
+        },
+        {
+          type: "video_url",
+          videoUrl: {
+            url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          },
+        },
+      ],
+    },
+  ],
+  stream: false,
+});
 
-Recommendations for managing large files:
-- Compress videos when feasible
-- Trim to relevant segments only
-- Consider 720p resolution over 4K for most tasks
-- Evaluate frame rate requirements
+console.log(result);
+```
 
-## Common Applications
+### Python
 
-Video analysis capabilities include summarization, object recognition, scene understanding, sports analysis, surveillance monitoring, and educational content assessment.
+```python
+import requests
+import json
 
-## Troubleshooting Checklist
+url = "https://openrouter.ai/api/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {API_KEY_REF}",
+    "Content-Type": "application/json"
+}
 
-Verify model supports video input via `input_modalities`. Confirm provider compatibility with video URLs. Test with base64 encoding if URL methods fail. Validate video format and file integrity.
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "Please describe what's happening in this video."
+            },
+            {
+                "type": "video_url",
+                "video_url": {
+                    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                }
+            }
+        ]
+    }
+]
+
+payload = {
+    "model": "{{MODEL}}",
+    "messages": messages
+}
+
+response = requests.post(url, headers=headers, json=payload)
+print(response.json())
+```
+
+### TypeScript (fetch)
+
+```typescript
+const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${API_KEY_REF}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "{{MODEL}}",
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Please describe what's happening in this video.",
+          },
+          {
+            type: "video_url",
+            video_url: {
+              url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            },
+          },
+        ],
+      },
+    ],
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+## Code Examples - Using Base64 Encoded Videos
+
+### TypeScript SDK
+
+```typescript
+import { OpenRouter } from '@openrouter/sdk';
+import * as fs from 'fs';
+
+const openRouter = new OpenRouter({
+  apiKey: '{{API_KEY_REF}}',
+});
+
+async function encodeVideoToBase64(videoPath: string): Promise<string> {
+  const videoBuffer = await fs.promises.readFile(videoPath);
+  const base64Video = videoBuffer.toString('base64');
+  return `data:video/mp4;base64,${base64Video}`;
+}
+
+// Read and encode the video
+const videoPath = 'path/to/your/video.mp4';
+const base64Video = await encodeVideoToBase64(videoPath);
+
+const result = await openRouter.chat.send({
+  model: '{{MODEL}}',
+  messages: [
+    {
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: "What's in this video?",
+        },
+        {
+          type: 'video_url',
+          videoUrl: {
+            url: base64Video,
+          },
+        },
+      ],
+    },
+  ],
+  stream: false,
+});
+
+console.log(result);
+```
+
+### Python
+
+```python
+import requests
+import json
+import base64
+from pathlib import Path
+
+def encode_video_to_base64(video_path):
+    with open(video_path, "rb") as video_file:
+        return base64.b64encode(video_file.read()).decode('utf-8')
+
+url = "https://openrouter.ai/api/v1/chat/completions"
+headers = {
+    "Authorization": f"Bearer {API_KEY_REF}",
+    "Content-Type": "application/json"
+}
+
+# Read and encode the video
+video_path = "path/to/your/video.mp4"
+base64_video = encode_video_to_base64(video_path)
+data_url = f"data:video/mp4;base64,{base64_video}"
+
+messages = [
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": "What's in this video?"
+            },
+            {
+                "type": "video_url",
+                "video_url": {
+                    "url": data_url
+                }
+            }
+        ]
+    }
+]
+
+payload = {
+    "model": "{{MODEL}}",
+    "messages": messages
+}
+
+response = requests.post(url, headers=headers, json=payload)
+print(response.json())
+```
+
+### TypeScript (fetch)
+
+```typescript
+import * as fs from 'fs';
+
+async function encodeVideoToBase64(videoPath: string): Promise<string> {
+  const videoBuffer = await fs.promises.readFile(videoPath);
+  const base64Video = videoBuffer.toString('base64');
+  return `data:video/mp4;base64,${base64Video}`;
+}
+
+// Read and encode the video
+const videoPath = 'path/to/your/video.mp4';
+const base64Video = await encodeVideoToBase64(videoPath);
+
+const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${API_KEY_REF}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: '{{MODEL}}',
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: "What's in this video?",
+          },
+          {
+            type: 'video_url',
+            video_url: {
+              url: base64Video,
+            },
+          },
+        ],
+      },
+    ],
+  }),
+});
+
+const data = await response.json();
+console.log(data);
+```

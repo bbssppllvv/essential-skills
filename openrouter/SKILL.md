@@ -52,4 +52,4 @@ Consult `references/INDEX.md` for the full table of contents with descriptions o
 - **Model format**: `provider/model-name` (e.g. `openai/gpt-4o`, `anthropic/claude-sonnet-4-5`)
 - **Variants**: Append `:free`, `:extended`, `:nitro`, `:thinking`, `:online` to model IDs
 - **Fallbacks**: Pass array of models to `models` field for automatic fallback
-- **Provider routing**: Use `provider.order`, `provider.allow`, `provider.deny` for control
+- **Provider routing**: Use `provider.order`, `provider.only`, `provider.ignore` for control

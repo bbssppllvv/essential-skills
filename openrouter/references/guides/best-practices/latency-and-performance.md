@@ -1,24 +1,43 @@
 # Latency and Performance
 
+Learn about OpenRouter's performance characteristics, latency optimizations, and best practices for achieving optimal response times.
+
 ## Overview
 
-OpenRouter prioritizes performance by minimizing gateway latency through "edge computing using Cloudflare Workers to stay as close as possible to your application" and "efficient caching of user and API key data at the edge."
+OpenRouter prioritizes performance by minimizing gateway latency. The platform achieves minimal overhead through:
 
-## Key Performance Factors
+- **Edge computing** using Cloudflare Workers to stay as close as possible to your application
+- **Efficient caching** of user and API key data at the edge
+- **Optimized routing logic** for fast request processing
 
-**Cache Warming**
-During initial deployment in new regions, expect temporarily elevated latency as edge caches populate over the first 1-2 minutes.
+## Performance Considerations
 
-**Credit Balance Monitoring**
-OpenRouter implements additional database checks when account balances are critically low or API keys approach spending limits. This protective measure "increases latency until additional credits are added" to prevent billing overages.
+### Cache Warming
 
-**Model and Provider Fallback**
-When primary routing fails, automatic failover mechanisms engage. The system learns from failures to intelligently route around unavailable providers, reducing repeated latency penalties.
+During initial operation in a new region (first 1-2 minutes), users may encounter slightly elevated latency as caches populate. This normalizes quickly after the initial warm-up period.
 
-## Optimization Recommendations
+### Credit Balance Checks
 
-**Maintain Adequate Funds**
-Keep account balances between $10-20 by configuring automatic top-ups. This eliminates forced credit verification checks that degrade response times.
+OpenRouter performs additional database checks when:
 
-**Leverage Provider Routing**
-Use provider preferences to align performance with your specific needs—whether optimizing time-to-first-token or overall completion speed while managing costs effectively.
+- A user's credit balance is low (single digit dollars)
+- An API key approaches its configured limit
+
+This more aggressive cache expiration increases latency temporarily until additional credits are added to the account.
+
+### Model Fallback
+
+When using model or provider routing, failed primary options trigger automatic failover attempts. This adds latency to that specific request. However, the system intelligently tracks failures to avoid repeated latency penalties by routing around unavailable providers in subsequent requests.
+
+## Best Practices
+
+### Maintain a Healthy Credit Balance
+
+Set up auto-topup with a higher threshold and amount. A recommended minimum balance of $10-20 helps avoid forced credit checks that degrade response times. This prevents zero-balance scenarios that trigger additional database verification on every request.
+
+### Use Provider Preferences
+
+Leverage provider routing features to optimize for your specific latency requirements. You can target:
+
+- **Time-to-first-token** — Prioritize providers that begin streaming responses quickly
+- **Overall completion speed** — Optimize for total response time while managing costs effectively

@@ -1,12 +1,12 @@
-# Thinking Variant: Extended Reasoning Documentation
+# Thinking Variant
 
-## Overview
+> Enable extended reasoning with :thinking
 
-The `:thinking` variant activates extended reasoning capabilities designed for tackling complex problem-solving scenarios.
+The `:thinking` variant enables extended reasoning capabilities for complex problem-solving tasks.
 
-## Implementation
+## Usage
 
-To utilize this feature, append `:thinking` to your model identifier:
+Append `:thinking` to any model ID:
 
 ```json
 {
@@ -14,10 +14,36 @@ To utilize this feature, append `:thinking` to your model identifier:
 }
 ```
 
-## Functionality
+## Details
 
-Models with the thinking variant offer access to sophisticated reasoning engines that support thorough analysis and sequential problem-solving approaches. According to the documentation, this feature "enables extended reasoning capabilities for complex problem-solving tasks," making it especially beneficial for projects requiring chain-of-thought methodologies.
+Thinking variants provide access to models with extended reasoning capabilities, allowing for more thorough analysis and step-by-step problem solving. This is particularly useful for complex tasks that benefit from chain-of-thought reasoning.
 
-## Additional Resources
+## Reasoning Tokens
 
-The documentation references a related guide on [Reasoning Tokens](/docs/best-practices/reasoning-tokens) for further exploration of this capability.
+For models that support it, the OpenRouter API can return Reasoning Tokens, also known as thinking tokens. OpenRouter normalizes the different ways of customizing the amount of reasoning tokens that the model will use, providing a unified interface across different providers.
+
+To activate reasoning tokens, include `"include_reasoning": true` in your API request. When enabled, reasoning output appears in the `"reasoning"` field of each message response.
+
+You can also enable reasoning for any thinking model on OpenRouter using:
+
+```json
+{
+  "reasoning": {
+    "enabled": true
+  }
+}
+```
+
+Reasoning tokens provide transparent visibility into model decision-making steps and work across both the web interface and programmatic API access.
+
+### Supported Models
+
+Reasoning tokens are initially available for:
+
+- **DeepSeek R1** models and derived variants
+- **Gemini Thinking** models
+- Other models with thinking variant support (e.g., GLM-4.5-Air which supports hybrid inference modes, offering a "thinking mode" for advanced reasoning and tool use, and a "non-thinking mode" for real-time interaction)
+
+## See Also
+
+- [Reasoning Tokens](/docs/best-practices/reasoning-tokens)
