@@ -1,146 +1,176 @@
-# API Parameters Documentation
+# LLM Parameters
 
-## Overview
+Sampling parameters that control token generation
 
-The OpenRouter API accepts various sampling parameters that control token generation. If parameters are omitted, OpenRouter applies defaults. Provider-specific parameters (like `safe_prompt` for Mistral) are passed directly to respective providers.
+The OpenRouter API accepts various sampling parameters that shape how tokens are generated. OpenRouter will default to the values listed below if certain parameters are absent from your request (for example, `temperature` to 1.0). Provider-specific parameters (like `safe_prompt` for Mistral) are passed directly to their respective providers.
 
-## Core Sampling Parameters
+## Sampling Parameters
 
 ### Temperature
+
 - **Key:** `temperature`
-- **Type:** Float (0.0-2.0)
+- **Type:** float
+- **Range:** 0.0 to 2.0
 - **Default:** 1.0
 
-Lower values lead to more predictable and typical responses, while higher values encourage more diverse and less common responses.
+Influences the variety in the model's responses. Lower values lead to more predictable and typical responses, while higher values encourage more diverse and less common responses. At 0, the model always gives the same response for a given input.
 
 ### Top P
+
 - **Key:** `top_p`
-- **Type:** Float (0.0-1.0)
+- **Type:** float
+- **Range:** 0.0 to 1.0
 - **Default:** 1.0
 
-Constrains model choices to tokens whose cumulative probabilities reach a threshold. Lower values increase predictability; the default enables full token range consideration.
+Limits the model's choices to a percentage of likely tokens: only the top tokens whose probabilities add up to P. A lower value makes the model's responses more predictable, while the default setting allows for a full range of token choices. Think of it like a dynamic Top-K.
 
 ### Top K
+
 - **Key:** `top_k`
-- **Type:** Integer (0+)
+- **Type:** integer
+- **Range:** 0 or above
 - **Default:** 0
 
-Restricts token selection to the K most likely options at each step. A value of 1 forces selection of the most probable token; default (disabled) considers all possibilities.
+Limits the model's choice of tokens at each step, making it choose from a smaller set. A value of 1 means the model will always pick the most likely next token, leading to predictable results. By default (0), this setting is disabled, meaning the model considers all choices.
 
 ### Frequency Penalty
+
 - **Key:** `frequency_penalty`
-- **Type:** Float (-2.0 to 2.0)
+- **Type:** float
+- **Range:** -2.0 to 2.0
 - **Default:** 0.0
 
-Controls repetition based on input frequency. Token penalty scales with the number of occurrences. Negative values encourage reuse.
+Aims to control the repetition of tokens based on how often they appear in the input. It specifically increases the token's penalty by an amount proportional to how often the token has already appeared in the input. Negative values will encourage token reuse.
 
 ### Presence Penalty
+
 - **Key:** `presence_penalty`
-- **Type:** Float (-2.0 to 2.0)
+- **Type:** float
+- **Range:** -2.0 to 2.0
 - **Default:** 0.0
 
-Adjusts repetition likelihood for previously-used tokens. Token penalty does not scale with the number of occurrences.
+Adjusts how often the model repeats specific tokens already used in the input. Higher values make such repetition less likely, while negative values do the opposite. Unlike frequency penalty, the token's penalty does not scale with the number of occurrences.
 
 ### Repetition Penalty
+
 - **Key:** `repetition_penalty`
-- **Type:** Float (0.0-2.0)
+- **Type:** float
+- **Range:** 0.0 to 2.0
 - **Default:** 1.0
 
-Reduces input token repetition. Higher values decrease repetition but excessive values may harm coherence.
+Helps to reduce the repetition of tokens from the input. A higher value makes the model less likely to repeat tokens, but too high a value can make the output less coherent.
 
 ### Min P
+
 - **Key:** `min_p`
-- **Type:** Float (0.0-1.0)
+- **Type:** float
+- **Range:** 0.0 to 1.0
 - **Default:** 0.0
 
-Sets minimum token probability relative to the most likely token.
+Represents the minimum probability for a token to be considered, relative to the probability of the most likely token.
 
 ### Top A
+
 - **Key:** `top_a`
-- **Type:** Float (0.0-1.0)
+- **Type:** float
+- **Range:** 0.0 to 1.0
 - **Default:** 0.0
 
-Filters tokens based on sufficiently high probabilities relative to the best option.
+Consider only the top tokens with "sufficiently high" probabilities based on the probability of the most likely token. Think of it like a dynamic Top-P.
 
 ## Generation Control Parameters
 
 ### Seed
-- **Key:** `seed`
-- **Type:** Integer
-- **Note:** Determinism not guaranteed for all models
 
-Enables deterministic sampling -- identical requests with same seed and parameters yield consistent results.
+- **Key:** `seed`
+- **Type:** integer
+
+If specified, the inferencing will sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed for all models.
 
 ### Max Tokens
-- **Key:** `max_tokens`
-- **Type:** Integer (1+)
 
-Sets upper limit on response token count. Cannot exceed context length minus prompt length.
+- **Key:** `max_tokens`
+- **Type:** integer
+- **Range:** 1 or above
+
+Sets the upper limit for the number of tokens the model can generate in response. The maximum value is the context length minus the prompt length.
 
 ### Stop
-- **Key:** `stop`
-- **Type:** Array
 
-Halts generation upon encountering specified tokens.
+- **Key:** `stop`
+- **Type:** array
+
+Stop generation immediately if the model encounters any token specified in the stop array.
 
 ## Advanced Parameters
 
 ### Logit Bias
-- **Key:** `logit_bias`
-- **Type:** Map (JSON object)
 
-Maps token IDs to bias values (-100 to 100). The bias is added to the logits generated by the model prior to sampling.
+- **Key:** `logit_bias`
+- **Type:** map (JSON object)
+- **Range:** -100 to 100 per token
+
+Accepts a JSON object that maps tokens (specified by their token ID) to an associated bias value. The bias is added to the logits generated by the model prior to sampling. The exact effect varies per model.
 
 ### Logprobs
-- **Key:** `logprobs`
-- **Type:** Boolean
 
-Returns log probabilities of output tokens when enabled.
+- **Key:** `logprobs`
+- **Type:** boolean
+
+Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned.
 
 ### Top Logprobs
-- **Key:** `top_logprobs`
-- **Type:** Integer (0-20)
 
-Specifies count of most likely tokens with log probabilities at each position. Requires `logprobs: true`.
+- **Key:** `top_logprobs`
+- **Type:** integer
+- **Range:** 0 to 20
+
+Specifying the number of most likely tokens to return at each token position, each with an associated log probability. `logprobs` must be set to `true` if this parameter is used.
 
 ## Output Formatting
 
 ### Response Format
-- **Key:** `response_format`
-- **Type:** Map
 
-Set to `{ "type": "json_object" }` for JSON mode, guaranteeing valid JSON output. Pair with explicit model instructions.
+- **Key:** `response_format`
+- **Type:** map
+
+Forces the model to produce specific output format. Setting to `{ "type": "json_object" }` enables JSON mode, which guarantees the message the model generates is valid JSON. Make sure to also instruct the model to produce JSON via a system or user message.
 
 ### Structured Outputs
-- **Key:** `structured_outputs`
-- **Type:** Boolean
 
-Enables structured output using JSON schema response format.
+- **Key:** `structured_outputs`
+- **Type:** boolean
+
+If the model can return structured outputs using `response_format` with `json_schema`.
 
 ### Verbosity
-- **Key:** `verbosity`
-- **Type:** Enum (low, medium, high, max)
-- **Default:** medium
 
-Controls response detail level. For Anthropic models, maps to `output_config.effort`; 'max' requires Claude 4.6 Opus or later.
+- **Key:** `verbosity`
+- **Type:** enum (`low`, `medium`, `high`, `max`)
+- **Default:** `medium`
+
+Constrains the verbosity of the model's response. Lower values produce more concise responses, while higher values produce more detailed and comprehensive responses. For Anthropic models, this maps to `output_config.effort`; `max` requires Claude 4.6 Opus or later.
 
 ## Tool Integration
 
 ### Tools
-- **Key:** `tools`
-- **Type:** Array
 
-Follows OpenAI's tool calling format; non-OpenAI providers receive transformed requests.
+- **Key:** `tools`
+- **Type:** array
+
+Tool calling parameter, following OpenAI's tool calling request shape. For non-OpenAI providers, it will be transformed accordingly.
 
 ### Tool Choice
-- **Key:** `tool_choice`
-- **Type:** Array
 
-Controls tool invocation: 'none' (no tools), 'auto' (model decides), 'required' (must call), or specific tool specification.
+- **Key:** `tool_choice`
+- **Type:** array
+
+Controls which (if any) tool is called by the model. `none` means the model will not call any tool. `auto` means the model can pick between generating a message or calling one or more tools. `required` means the model must call one or more tools. Or specify a particular tool.
 
 ### Parallel Tool Calls
-- **Key:** `parallel_tool_calls`
-- **Type:** Boolean
-- **Default:** true
 
-Enables simultaneous function calls when true; sequential when false.
+- **Key:** `parallel_tool_calls`
+- **Type:** boolean
+- **Default:** `true`
+
+Whether to enable parallel function calling during tool use. If true, the model can call multiple functions simultaneously.

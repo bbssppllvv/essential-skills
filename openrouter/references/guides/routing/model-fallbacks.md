@@ -1,42 +1,149 @@
-# Model Fallbacks Documentation
+# Model Fallbacks
 
 ## Overview
 
-OpenRouter's model fallbacks feature enables "automatic failover between AI models when providers are down, rate-limited, or refuse requests."
-
-## Core Functionality
-
-The `models` parameter accepts an array of model IDs ordered by preference. When the primary model encounters an error, OpenRouter automatically attempts the next model in the sequence.
+OpenRouter's model fallbacks feature enables automatic switching between AI models when primary providers experience issues. The `models` parameter accepts an array of model IDs in priority order. If the first model returns an error, OpenRouter will automatically try the next model in the list.
 
 ## Fallback Triggers
 
-The system activates fallback behavior for multiple error types:
+Supported error types that trigger fallback include:
 
-- Context length validation failures
-- Content moderation flags on filtered models
 - Rate-limiting constraints
 - Provider downtime
+- Content moderation flags on filtered models
+- Context length validation failures
 
-## Pricing Model
+## Pricing
 
-"Requests are priced using the model that was ultimately used, which will be returned in the `model` attribute of the response body."
+Requests are priced using the model that was ultimately used, which will be returned in the `model` attribute of the response body.
 
 ## Implementation Examples
 
-**OpenRouter SDK (TypeScript):**
+### TypeScript SDK
+
 ```typescript
+import { OpenRouter } from '@openrouter/sdk';
+
+const openRouter = new OpenRouter({
+  apiKey: '<OPENROUTER_API_KEY>',
+});
+
 const completion = await openRouter.chat.send({
   models: ['anthropic/claude-3.5-sonnet', 'gryphe/mythomax-l2-13b'],
-  messages: [{ role: 'user', content: 'Your prompt here' }],
+  messages: [
+    {
+      role: 'user',
+      content: 'What is the meaning of life?',
+    },
+  ],
 });
+
+console.log(completion.choices[0].message.content);
 ```
 
-**REST API (curl/fetch):**
-Include the `models` array in the JSON request body to the `/api/v1/chat/completions` endpoint.
+### Fetch API
 
-**Python:**
-Use the `requests` library to POST JSON data containing the models array to the OpenRouter API endpoint.
+```typescript
+const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer <OPENROUTER_API_KEY>',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    models: ['anthropic/claude-3.5-sonnet', 'gryphe/mythomax-l2-13b'],
+    messages: [
+      {
+        role: 'user',
+        content: 'What is the meaning of life?',
+      },
+    ],
+  }),
+});
+
+const data = await response.json();
+console.log(data.choices[0].message.content);
+```
+
+### Python
+
+```python
+import requests
+import json
+
+response = requests.post(
+  url="https://openrouter.ai/api/v1/chat/completions",
+  headers={
+    "Authorization": "Bearer <OPENROUTER_API_KEY>",
+    "Content-Type": "application/json",
+  },
+  data=json.dumps({
+    "models": ["anthropic/claude-3.5-sonnet", "gryphe/mythomax-l2-13b"],
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the meaning of life?"
+      }
+    ]
+  })
+)
+
+data = response.json()
+print(data['choices'][0]['message']['content'])
+```
 
 ## OpenAI SDK Integration
 
-When using OpenAI's SDK, pass the models array through the `extra_body` parameter. The specified `model` parameter acts as the primary option, with array entries serving as sequential fallbacks.
+### Python (OpenAI SDK)
+
+```python
+from openai import OpenAI
+
+openai_client = OpenAI(
+  base_url="https://openrouter.ai/api/v1",
+  api_key="<OPENROUTER_API_KEY>",
+)
+
+completion = openai_client.chat.completions.create(
+    model="openai/gpt-4o",
+    extra_body={
+        "models": ["anthropic/claude-3.5-sonnet", "gryphe/mythomax-l2-13b"],
+    },
+    messages=[
+        {
+            "role": "user",
+            "content": "What is the meaning of life?"
+        }
+    ]
+)
+
+print(completion.choices[0].message.content)
+```
+
+### TypeScript (OpenAI SDK)
+
+```typescript
+import OpenAI from 'openai';
+
+const openrouterClient = new OpenAI({
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: '<OPENROUTER_API_KEY>',
+});
+
+async function main() {
+  // @ts-expect-error
+  const completion = await openrouterClient.chat.completions.create({
+    model: 'openai/gpt-4o',
+    models: ['anthropic/claude-3.5-sonnet', 'gryphe/mythomax-l2-13b'],
+    messages: [
+      {
+        role: 'user',
+        content: 'What is the meaning of life?',
+      },
+    ],
+  });
+  console.log(completion.choices[0].message);
+}
+
+main();
+```

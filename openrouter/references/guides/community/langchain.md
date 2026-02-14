@@ -8,6 +8,7 @@ OpenRouter integrates with LangChain by configuring the `base_url` parameter to 
 
 - LangChain Python framework: Available on [GitHub](https://github.com/langchain-ai/langchain)
 - Example implementation with Streamlit: [GitHub repository](https://github.com/alexanderatallah/openrouter-streamlit)
+- Reference documentation: [LangChain Models documentation](https://docs.langchain.com/oss/python/langchain/models#initialize-a-model)
 
 ## Implementation Examples
 
@@ -22,7 +23,7 @@ const chat = new ChatOpenAI(
     model: '<model_name>',
     temperature: 0.8,
     streaming: true,
-    apiKey: '${API_KEY_REF}',
+    apiKey: '$OPENROUTER_API_KEY',
   },
   {
     baseURL: 'https://openrouter.ai/api/v1',

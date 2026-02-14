@@ -1,15 +1,17 @@
-# API Rate Limits Documentation
+# Rate Limits
+
+Rate limits and credit-based quotas for the OpenRouter API
 
 ## Overview
-OpenRouter implements rate limits and credit-based quotas to manage API usage. Creating multiple accounts or API keys won't bypass these limits, as they're governed globally. However, different models have varying rate limits, allowing you to distribute load across them.
+
+OpenRouter implements rate limiting and credit-based quotas to manage API usage. Creating multiple accounts or API keys won't bypass these limits, as they're governed globally. However, different models have varying rate limits, allowing you to distribute load across them.
 
 ## Checking Rate Limits and Credits
 
 To retrieve your API key's rate limit and remaining credits, submit a GET request to `https://openrouter.ai/api/v1/key`.
 
-### Code Examples
+### TypeScript SDK
 
-**TypeScript SDK:**
 ```typescript
 import { OpenRouter } from '@openrouter/sdk';
 
@@ -21,7 +23,8 @@ const keyInfo = await openRouter.apiKeys.getCurrent();
 console.log(keyInfo);
 ```
 
-**Python:**
+### Python
+
 ```python
 import requests
 import json
@@ -36,7 +39,8 @@ response = requests.get(
 print(json.dumps(response.json(), indent=2))
 ```
 
-**TypeScript (Raw API):**
+### TypeScript (Raw API)
+
 ```typescript
 const response = await fetch('https://openrouter.ai/api/v1/key', {
   method: 'GET',
@@ -49,15 +53,41 @@ const keyInfo = await response.json();
 console.log(keyInfo);
 ```
 
-## Response Structure
+## Response Format
 
-The API returns key information including credit limits, remaining credits, and usage metrics across different time periods (daily, weekly, monthly).
+```typescript
+type Key = {
+  data: {
+    label: string;
+    limit: number | null;
+    limit_reset: string | null;
+    limit_remaining: number | null;
+    include_byok_in_limit: boolean;
+
+    usage: number;
+    usage_daily: number;
+    usage_weekly: number;
+    usage_monthly: number;
+
+    byok_usage: number;
+    byok_usage_daily: number;
+    byok_usage_weekly: number;
+    byok_usage_monthly: number;
+
+    is_free_tier: boolean;
+  };
+};
+```
 
 ## Rate Limit Types
 
-1. **Free Model Limits**: Models with IDs ending in specific variants are restricted to a defined number of requests per minute and daily request quotas, varying based on whether users have purchased credits.
+### Free Model Limits
 
-2. **DDoS Protection**: Cloudflare's security measures block requests exhibiting unusual patterns.
+Models with a free model variant (with an ID ending in `:free`) are restricted to a defined number of requests per minute, with daily caps depending on whether the user has purchased credits.
+
+### DDoS Protection
+
+Cloudflare's security measures defend against requests that dramatically exceed reasonable usage patterns.
 
 ## Payment Requirements
 

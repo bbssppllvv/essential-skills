@@ -1,12 +1,16 @@
-# API Streaming Documentation
+# Streaming
 
-## Overview
+Real-time Model Responses in OpenRouter
 
-OpenRouter's API enables streaming responses from any model, which is beneficial for building chat interfaces where the UI updates as the model generates responses. To activate streaming, set the `stream` parameter to `true` in your request.
+The OpenRouter API enables streaming responses from any model, making it ideal for chat interfaces where the UI updates as the model generates content.
 
-## Basic Implementation
+## Enabling Streaming
 
-### TypeScript SDK
+To activate streaming, set the `stream` parameter to `true` in your request. The model will then send response chunks to the client progressively rather than returning everything at once.
+
+## Implementation Examples
+
+**TypeScript SDK:**
 ```typescript
 import { OpenRouter } from '@openrouter/sdk';
 
@@ -28,13 +32,14 @@ for await (const chunk of stream) {
     console.log(content);
   }
 
+  // Final chunk includes usage stats
   if (chunk.usage) {
     console.log('Usage:', chunk.usage);
   }
 }
 ```
 
-### Python
+**Python:**
 ```python
 import requests
 import json
@@ -59,6 +64,7 @@ with requests.post(url, headers=headers, json=payload, stream=True) as r:
     buffer += chunk
     while True:
       try:
+        # Find the next complete SSE line
         line_end = buffer.find('\n')
         if line_end == -1:
           break
@@ -82,7 +88,7 @@ with requests.post(url, headers=headers, json=payload, stream=True) as r:
         break
 ```
 
-### TypeScript (Fetch)
+**TypeScript (fetch):**
 ```typescript
 const question = 'How would you build the tallest building ever?';
 const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -111,8 +117,10 @@ try {
     const { done, value } = await reader.read();
     if (done) break;
 
+    // Append new chunk to buffer
     buffer += decoder.decode(value, { stream: true });
 
+    // Process complete lines from buffer
     while (true) {
       const lineEnd = buffer.indexOf('\n');
       if (lineEnd === -1) break;
@@ -141,26 +149,29 @@ try {
 }
 ```
 
-## Additional Information
+## SSE Comments
 
-OpenRouter occasionally sends SSE comments like `: OPENROUTER PROCESSING` to prevent connection timeouts. These comments can be safely ignored per SSE specifications, though they can enhance UX through dynamic loading indicators.
+OpenRouter occasionally sends SSE comments like `: OPENROUTER PROCESSING` to prevent connection timeouts. These can be safely ignored per SSE specifications but may enhance UX with dynamic loading indicators.
 
-Recommended SSE client implementations:
+Recommended SSE client libraries:
 - eventsource-parser
 - OpenAI SDK
 - Vercel AI SDK
 
 ## Stream Cancellation
 
-Streaming requests can be cancelled by aborting the connection. For supported providers, this immediately halts model processing and billing.
+Streaming requests can be cancelled by aborting the connection. For supported providers, this stops model processing and billing immediately.
 
 ### Supported Providers
+
 OpenAI, Azure, Anthropic, Fireworks, Mancer, Recursal, AnyScale, Lepton, OctoAI, Novita, DeepInfra, Together, Cohere, Hyperbolic, Infermatic, Avian, XAI, Cloudflare, SFCompute, Nineteen, Liquid, Friendli, Chutes, DeepSeek
 
 ### Unsupported Providers
+
 AWS Bedrock, Groq, Modal, Google, Google AI Studio, Minimax, HuggingFace, Replicate, Perplexity, Mistral, AI21, Featherless, Lynn, Lambda, Reflection, SambaNova, Inflection, ZeroOneAI, AionLabs, Alibaba, Nebius, Kluster, Targon, InferenceNet
 
-### TypeScript SDK Implementation
+### TypeScript SDK Cancellation
+
 ```typescript
 import { OpenRouter } from '@openrouter/sdk';
 
@@ -197,7 +208,8 @@ try {
 controller.abort();
 ```
 
-### Python Implementation
+### Python Cancellation
+
 ```python
 import requests
 from threading import Event, Thread
@@ -230,7 +242,8 @@ stream_thread.start()
 cancel_event.set()
 ```
 
-### TypeScript (Fetch) Implementation
+### TypeScript (fetch) Cancellation
+
 ```typescript
 const controller = new AbortController();
 
@@ -265,13 +278,13 @@ try {
 controller.abort();
 ```
 
-**Warning**: Cancellation functions only for streaming with supported providers. Non-streaming requests or unsupported providers will continue processing and incur full billing.
+> **Warning**: Cancellation functions only for streaming with supported providers. Non-streaming requests or unsupported providers will continue processing and incur full billing.
 
 ## Error Handling During Streaming
 
 ### Pre-Stream Errors
 
-If an error occurs before any tokens stream to the client, OpenRouter returns a standard JSON error response with the appropriate HTTP status code:
+If an error occurs before any tokens have been streamed to the client, OpenRouter returns a standard JSON error response with the appropriate HTTP status code:
 
 ```json
 {
@@ -292,7 +305,7 @@ Common HTTP status codes:
 
 ### Mid-Stream Errors
 
-If an error occurs after tokens have streamed, OpenRouter cannot change the HTTP status (already 200 OK). Instead, the error is sent as an SSE with unified structure:
+If an error occurs after some tokens have already been streamed to the client, OpenRouter cannot change the HTTP status code (which is already 200 OK). Instead, the error is sent as an SSE with unified structure:
 
 ```text
 data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-3.5-turbo","provider":"openai","error":{"code":"server_error","message":"Provider disconnected unexpectedly"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}
@@ -397,7 +410,7 @@ async def stream_with_error_handling(prompt):
                     pass
 ```
 
-**TypeScript (Fetch):**
+**TypeScript (fetch):**
 ```typescript
 async function streamWithErrorHandling(prompt: string) {
   const response = await fetch(

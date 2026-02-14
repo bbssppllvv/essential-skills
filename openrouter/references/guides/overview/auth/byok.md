@@ -1,68 +1,157 @@
-# BYOK Documentation - OpenRouter
+# Bring Your Own API Keys
 
-## Overview
+OpenRouter supports both OpenRouter credits and the option to bring your own provider keys (BYOK).
 
-OpenRouter's Bring Your Own Keys (BYOK) feature enables users to leverage their existing AI provider API credentials while utilizing OpenRouter's unified interface. "Your provider keys are securely encrypted and used for all requests routed through the specified provider."
+When you use OpenRouter credits, your rate limits for each provider are managed by OpenRouter.
 
-## Key Management & Costs
+Using provider keys enables direct control over rate limits and costs via your provider account.
 
-Users can manage their provider keys through account settings. The platform charges "a small fee based on usage" for BYOK services, with this fee waived for the first monthly threshold of requests.
+Your provider keys are securely encrypted and used for all requests routed through the specified provider.
 
-## Routing Behavior
+Manage keys in your [account settings](https://openrouter.ai/settings/integrations).
 
-### Default Priority System
+The cost of using custom provider keys on OpenRouter is a percentage of what the same model/provider would cost normally on OpenRouter and will be deducted from your OpenRouter credits. This fee is waived for the first monthly BYOK requests per-month.
 
-OpenRouter prioritizes user-provided keys whenever available. If a key encounters rate limiting or failures, the system automatically falls back to shared OpenRouter credits by default.
+## Key Priority and Fallback
 
-### The "Always Use This Key" Option
+OpenRouter always prioritizes using your provider keys when available. By default, if your key encounters a rate limit or failure, OpenRouter will fall back to using shared OpenRouter credits.
 
-Users can configure individual keys with an enforcement setting to prevent fallback to shared credits, ensuring all requests use their account exclusively—though this may trigger rate limit errors if capacity is exhausted.
+You can configure individual keys with "Always use this key" to prevent any fallback to OpenRouter credits.
 
-### Integration with Provider Ordering
+## BYOK with Provider Ordering
 
-When combining BYOK with provider ordering, "OpenRouter always prioritizes BYOK endpoints first, regardless of where that provider appears in your specified order." After exhausting BYOK options, the system falls back to shared capacity following the user's specified sequence.
+When you combine BYOK keys with provider ordering, OpenRouter always prioritizes BYOK endpoints first, regardless of where that provider appears in your specified order.
 
-**Example routing hierarchy with three BYOK providers:**
-- All BYOK endpoints (in provider order)
-- Shared OpenRouter capacity (in provider order)
+### Example JSON - Full BYOK
 
-### Multiple Keys for Same Provider
+```json
+{
+  "provider": {
+    "allow_fallbacks": true,
+    "order": ["amazon-bedrock", "google-vertex", "anthropic"]
+  }
+}
+```
 
-The platform supports multiple BYOK keys per provider, though "the order in which multiple keys for the same provider are tried is not guaranteed."
+### Example JSON - Partial BYOK
 
-## Provider-Specific Configurations
+```json
+{
+  "provider": {
+    "allow_fallbacks": true,
+    "order": ["amazon-bedrock", "google-vertex"]
+  }
+}
+```
 
-### Azure AI Services
+## Azure API Keys
 
-Azure integration requires JSON configuration with:
-- Model slug (OpenRouter identifier)
-- Endpoint URL (with `/chat/completions` suffix)
-- API key
-- Azure model deployment ID
+```json
+{
+  "model_slug": "the-openrouter-model-slug",
+  "endpoint_url": "https://<resource>.services.ai.azure.com/deployments/<model-id>/chat/completions?api-version=<api-version>",
+  "api_key": "your-azure-api-key",
+  "model_id": "the-azure-model-id"
+}
+```
 
-### AWS Bedrock
+### Multiple Azure Deployments
 
-Two authentication methods available:
+```json
+[
+  {
+    "model_slug": "mistralai/mistral-large",
+    "endpoint_url": "https://example-project.openai.azure.com/openai/deployments/mistral-large/chat/completions?api-version=2024-08-01-preview",
+    "api_key": "your-azure-api-key",
+    "model_id": "mistral-large"
+  },
+  {
+    "model_slug": "openai/gpt-5.2",
+    "endpoint_url": "https://example-project.openai.azure.com/openai/deployments/gpt-5.2/chat/completions?api-version=2024-08-01-preview",
+    "api_key": "your-azure-api-key",
+    "model_id": "gpt-5.2"
+  }
+]
+```
 
-**Option 1: Bedrock API Keys** - Simple string format, tied to specific regions
+## AWS Bedrock API Keys
 
-**Option 2: AWS Credentials** - JSON format with access key ID, secret key, and region specification
+Simple format:
 
-Required IAM permissions include `bedrock:InvokeModel` and `bedrock:InvokeModelWithResponseStream`.
+```
+your-bedrock-api-key-here
+```
 
-### Google Vertex AI
+### AWS Credentials Option
 
-Authentication uses a Google Cloud service account JSON key with optional region specification (defaults to global).
+```json
+{
+  "accessKeyId": "your-aws-access-key-id",
+  "secretAccessKey": "your-aws-secret-access-key",
+  "region": "your-aws-region"
+}
+```
 
-Required permissions: `aiplatform.endpoints.predict` and `aiplatform.endpoints.streamingPredict`.
+### Example IAM Policy
 
-## Troubleshooting
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
 
-Users can debug issues via the Activity page's raw metadata viewer, which displays provider HTTP response codes.
+## Google Vertex API Keys
 
-Common error codes:
-- **400**: Invalid request format
-- **401**: Invalid or revoked API key
-- **403**: Insufficient permissions
-- **429**: Rate limit exceeded
-- **500**: Provider-side server error
+```json
+{
+  "type": "service_account",
+  "project_id": "your-project-id",
+  "private_key_id": "your-private-key-id",
+  "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+  "client_email": "your-service-account@your-project.iam.gserviceaccount.com",
+  "client_id": "your-client-id",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/your-service-account@your-project.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com",
+  "region": "global"
+}
+```
+
+### Example IAM Policy
+
+```json
+{
+  "bindings": [
+    {
+      "role": "roles/aiplatform.user",
+      "members": [
+        "serviceAccount:your-service-account@your-project.iam.gserviceaccount.com"
+      ]
+    }
+  ]
+}
+```
+
+## Debugging BYOK Issues
+
+Common HTTP status codes:
+
+| Status Code | Meaning |
+|-------------|---------|
+| **400 Bad Request** | Invalid request format |
+| **401 Unauthorized** | Invalid or revoked API key |
+| **403 Forbidden** | Insufficient permissions |
+| **429 Too Many Requests** | Rate limit exceeded |
+| **500 Server Error** | Provider-side internal error |

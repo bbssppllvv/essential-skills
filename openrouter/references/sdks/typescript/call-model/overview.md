@@ -2,11 +2,11 @@
 
 ## Overview
 
-The OpenRouter SDK's `callModel` function offers a unified interface for accessing 300+ language models with built-in support for tool execution and multiple response consumption patterns.
+The OpenRouter SDK's `callModel` function provides a unified API for calling any LLM with automatic tool execution and multiple consumption patterns. This feature enables developers to access over 300 language models through a single interface.
 
 ## Key Features
 
-- **Items-Based Architecture**: Built on OpenRouter's Responses API with structured items (messages, tool calls, reasoning)
+- **Items-Based Architecture**: Built on OpenRouter's Responses API with structured items (messages, tool calls, reasoning) rather than raw message chunks
 - **Flexible Response Handling**: Developers can retrieve text, stream responses, or access structured data from a single call
 - **Automatic Tool Execution**: The SDK manages tool execution loops when tools are defined using Zod schemas
 - **TypeScript Support**: Full type inference is provided for tool inputs, outputs, and events
@@ -16,17 +16,25 @@ The OpenRouter SDK's `callModel` function offers a unified interface for accessi
 ## Basic Usage
 
 ```typescript
+import { OpenRouter } from '@openrouter/sdk';
+
+const openrouter = new OpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
+
 const result = openrouter.callModel({
   model: 'openai/gpt-5-nano',
   input: 'What is the capital of France?',
 });
 
 const text = await result.getText();
+console.log(text);
 ```
 
 ## Response Consumption Methods
 
 **Text retrieval:**
+
 ```typescript
 const text = await result.getText();
 const response = await result.getResponse(); // includes usage data
@@ -47,6 +55,6 @@ const response = await result.getResponse(); // includes usage data
 
 The function accepts strings, message arrays, or configurations with system instructions for customized interactions.
 
-## Additional Resources
+## Documentation Structure
 
-The documentation points to comprehensive guides covering items-based streaming, text generation, streaming patterns, tool creation, message format conversion, dynamic parameters, execution controls, and ready-to-use tool examples.
+The complete guide includes sections on items-based streaming, text generation, streaming patterns, tool creation, message format conversion, dynamic parameters, stop conditions management, and ready-to-use tool examples.

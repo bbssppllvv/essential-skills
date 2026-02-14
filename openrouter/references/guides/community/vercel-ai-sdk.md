@@ -2,23 +2,19 @@
 
 ## Overview
 
-The Vercel AI SDK enables developers to integrate OpenRouter with Next.js applications. This guide demonstrates the setup process and practical usage patterns.
+The Vercel AI SDK enables developers to integrate OpenRouter with Next.js applications using a dedicated provider package. Users can leverage OpenRouter's model access through the `@openrouter/ai-sdk-provider` package.
 
 ## Installation
 
-To get started, install the OpenRouter AI SDK provider package:
+Install the required package:
 
 ```bash
 npm install @openrouter/ai-sdk-provider
 ```
 
-## Basic Usage
+## Implementation Examples
 
-The integration leverages Vercel's `streamText()` API to handle streaming responses from OpenRouter models.
-
-## Code Examples
-
-### Text Generation Example
+### Text Streaming Example
 
 ```typescript
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
@@ -26,7 +22,7 @@ import { streamText } from 'ai';
 
 export const getLasagnaRecipe = async (modelName: string) => {
   const openrouter = createOpenRouter({
-    apiKey: '${API_KEY_REF}',
+    apiKey: '$OPENROUTER_API_KEY',
   });
 
   const response = streamText({
@@ -42,11 +38,13 @@ export const getLasagnaRecipe = async (modelName: string) => {
 ### Tool Integration Example
 
 ```typescript
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { streamText } from 'ai';
 import { z } from 'zod';
 
 export const getWeather = async (modelName: string) => {
   const openrouter = createOpenRouter({
-    apiKey: '${API_KEY_REF}',
+    apiKey: '$OPENROUTER_API_KEY',
   });
 
   const response = streamText({
@@ -60,7 +58,13 @@ export const getWeather = async (modelName: string) => {
           unit: z.enum(['celsius', 'fahrenheit']).optional(),
         }),
         execute: async ({ location, unit = 'celsius' }) => {
-          // Implementation with mock weather data
+          const weatherData = {
+            'Boston, MA': { celsius: '15°C', fahrenheit: '59°F' },
+            'San Francisco, CA': { celsius: '18°C', fahrenheit: '64°F' },
+          };
+          const weather = weatherData[location];
+          if (!weather) return `Weather data for ${location} is not available.`;
+          return `The current weather in ${location} is ${weather[unit]}.`;
         },
       },
     },
@@ -70,3 +74,9 @@ export const getWeather = async (modelName: string) => {
   return response.text;
 };
 ```
+
+## Key Features
+
+- Uses the `streamText()` API for streaming responses
+- Supports tool/function calling with Zod schema validation
+- Integrates seamlessly with Next.js applications

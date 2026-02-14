@@ -1,10 +1,12 @@
-# Web Search Documentation
+# Web Search
 
-## Overview
+Add real-time web data to AI model responses.
 
-OpenRouter enables real-time web search integration across any model through the web plugin. You can activate this feature by appending `:online` to your model slug or explicitly configuring the `web` plugin.
+OpenRouter enables real-time web search capabilities through a model-agnostic plugin system. You can incorporate relevant web search results for any model on OpenRouter by activating and customizing the `web` plugin.
 
 ## Basic Usage
+
+### Using the `:online` Shortcut
 
 The simplest approach is using the `:online` suffix:
 
@@ -22,24 +24,33 @@ This works with free model variants too:
 }
 ```
 
-The `:online` shortcut is equivalent to explicitly specifying the web plugin with `"routers/auto"` as the model.
+### Equivalent Plugin Configuration
 
-## Search Result Formatting
+The `:online` shortcut is equivalent to explicitly specifying the web plugin:
 
-Web search results follow OpenAI's Chat Completion Message standard and include URL citations with annotations:
+```json
+{
+  "model": "openrouter/auto",
+  "plugins": [{ "id": "web" }]
+}
+```
+
+## Web Search Result Format
+
+Results follow OpenAI's Chat Completion Message schema with annotations:
 
 ```json
 {
   "message": {
     "role": "assistant",
-    "content": "Here's the latest news...",
+    "content": "Here's the latest news I found: ...",
     "annotations": [
       {
         "type": "url_citation",
         "url_citation": {
-          "url": "https://example.com",
-          "title": "Result Title",
-          "content": "Result content",
+          "url": "https://www.example.com/web-search-result",
+          "title": "Title of the web search result",
+          "content": "Content of the web search result",
           "start_index": 100,
           "end_index": 200
         }
@@ -61,7 +72,7 @@ Customize search behavior through plugin parameters:
       "id": "web",
       "engine": "exa",
       "max_results": 1,
-      "search_prompt": "Relevant web results:"
+      "search_prompt": "Some relevant web results:"
     }
   ]
 }
@@ -69,30 +80,61 @@ Customize search behavior through plugin parameters:
 
 ## Engine Options
 
-**Native search** (default for supported providers): OpenAI, Anthropic, Perplexity, and xAI models use their built-in capabilities. **Exa search**: Used for other models or as fallback, employing neural and keyword search combination.
+**Native search** (default for supported providers): OpenAI, Anthropic, Perplexity, and xAI models use their built-in capabilities.
 
-Force specific engines:
+**Exa search**: Used for other models or as fallback, employing neural and keyword search combination.
+
+### Force Native Search
 
 ```json
 {
   "model": "openai/gpt-5.2",
-  "plugins": [{"id": "web", "engine": "native"}]
+  "plugins": [
+    {
+      "id": "web",
+      "engine": "native"
+    }
+  ]
 }
 ```
 
-## Pricing Structure
+### Force Exa Search
 
-**Exa search**: $4 per 1000 results (approximately $0.02 per default 5-result request)
+```json
+{
+  "model": "openai/gpt-5.2",
+  "plugins": [
+    {
+      "id": "web",
+      "engine": "exa",
+      "max_results": 3
+    }
+  ]
+}
+```
 
-**Native search**: Provider pricing based on search context size (low, medium, high)
+## Search Context Configuration
 
-Specify context size:
+Specify context size for native search:
 
 ```json
 {
   "model": "openai/gpt-4.1",
-  "web_search_options": {"search_context_size": "high"}
+  "messages": [
+    {
+      "role": "user",
+      "content": "What are the latest developments in quantum computing?"
+    }
+  ],
+  "web_search_options": {
+    "search_context_size": "high"
+  }
 }
 ```
+
+## Pricing
+
+- **Exa Search**: $4 per 1,000 results (approximately $0.02 per default 5-result request)
+- **Native Search**: Provider-specific pricing applied directly based on search context size (low, medium, high)
 
 Refer to individual provider documentation for native search pricing details.
