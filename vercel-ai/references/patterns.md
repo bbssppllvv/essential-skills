@@ -271,38 +271,14 @@ const result = await generateText({
 
 ## Security
 
-### API key protection
+For comprehensive security documentation (Vercel Firewall/WAF, BotID, rate limiting, prompt injection, cost protection), see `references/security.md`.
 
-- Never expose API keys in client-side code
-- Use server-side API routes (Next.js route handlers)
-- Store keys in environment variables
-- Use `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` — auto-detected by providers
+Quick reminders for everyday development:
 
-### Input validation
-
-```typescript
-export async function POST(req: Request) {
-  const body = await req.json();
-
-  // Validate input
-  const schema = z.object({
-    messages: z.array(z.object({
-      role: z.enum(['user', 'assistant', 'system']),
-      content: z.string().max(10000),
-    })),
-  });
-
-  const { messages } = schema.parse(body);
-  // Process validated messages...
-}
-```
-
-### Message limit
-
-```typescript
-// Limit conversation length to control costs
-const trimmedMessages = messages.slice(-20); // Keep last 20 messages
-```
+- Never expose API keys in client-side code — use server-side route handlers
+- Store keys in environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY` — auto-detected by providers)
+- Trim conversation length to control costs: `messages.slice(-20)`
+- Validate input structure with Zod before passing to the model
 
 ---
 
@@ -414,11 +390,17 @@ The template supports both full authentication (NextAuth) and guest access, enab
 ### Bot detection and rate limiting
 
 ```typescript
-import { isBotRequest } from 'botid';
+import { checkBotId } from 'botid/server';
+
+// Verify request is from a real user, not a bot
+const { isBot } = await checkBotId();
+if (isBot) return Response.json({ error: 'Access denied' }, { status: 403 });
 
 // Rate limiting per user type
 const limit = isGuest ? '10/hr' : '100/hr';
 ```
+
+See `references/security.md` for full BotID setup (client + server) and WAF rate limiting.
 
 ---
 
