@@ -1,6 +1,6 @@
 ---
 name: vercel-ai
-description: "Comprehensive guide for the entire Vercel AI ecosystem: AI SDK v6 (generateText, streamText, useChat, ToolLoopAgent, Output helpers, tool calling, embeddings, middleware, MCP), AI Gateway (@ai-sdk/gateway for unified model access, routing, fallbacks, caching, observability), AI Elements (48+ React components for chat UIs \u2014 Message, Conversation, PromptInput, Reasoning, Tool, CodeBlock, Agent, Artifact, Streamdown), Chat SDK (cross-platform bots for Slack/Discord/Teams/GitHub/Telegram/Linear), Workflow DevKit (durable workflows with \"use workflow\"/\"use step\" directives), and Data Stream Protocol (SSE protocol for custom backends and native mobile/SwiftUI clients). Use this skill whenever building AI chat interfaces, chatbots, AI assistants, streaming responses, rendering tool invocations, showing reasoning/chain-of-thought, implementing agent UIs, building cross-platform chat bots, creating durable AI workflows, building mobile/SwiftUI AI clients via the data stream protocol, configuring AI Gateway for routing and fallbacks, or working with any Vercel AI package (ai, @ai-sdk/*, @ai-sdk/gateway, ai-elements, chat, workflow). Also use when working with useChat hook, sendMessage, message parts, Streamdown markdown renderer, code highlighting with Shiki, voice input, tool approval confirmations, model selectors, Next.js AI integration, LLM integration, or any AI-native UI component."
+description: "Complete Vercel AI ecosystem guide: AI SDK v6 (generateText, streamText, useChat, tools, agents, MCP), AI Gateway (routing, fallbacks, caching), AI Elements (48+ React UI components), Chat SDK (Slack/Discord/Teams bots), Workflow DevKit, Data Stream Protocol, and Security (Vercel Firewall/WAF, BotID bot detection, rate limiting, DDoS, Attack Challenge Mode, prompt injection prevention, cost controls). Use when building AI chat UIs, agents, streaming, tool calling, or working with ai/@ai-sdk packages. Also use when securing AI apps: Firewall rules, BotID, @vercel/firewall rate limiting, bot blocking, geo-blocking, IP blocking, AI endpoint protection, Spend Management, or any Vercel security for AI products."
 ---
 
 # Vercel AI Ecosystem \u2014 Complete Implementation Guide
@@ -15,6 +15,7 @@ This skill covers the full Vercel AI stack for building production-grade AI appl
 | **AI Elements** | `ai-elements` | 48+ pre-built React components for AI interfaces (shadcn/ui based) |
 | **Chat SDK** | `chat` | Cross-platform bots (Slack, Discord, Teams, GitHub, Telegram, Linear) |
 | **Workflow DevKit** | `workflow` | Durable, resumable workflows with `"use workflow"` / `"use step"` directives |
+| **Security** | `botid`, `@vercel/firewall` | Firewall/WAF, BotID bot detection, rate limiting, DDoS, abuse protection |
 
 ## How to Use This Skill
 
@@ -38,6 +39,7 @@ Read reference files as needed for the specific domain you're working in:
 | `references/ai-gateway.md` | AI Gateway: routing, fallbacks, caching, BYOK, observability |
 | `references/data-stream-protocol.md` | SSE protocol for custom backends and native mobile clients (SwiftUI) |
 | `references/streamdown.md` | Streamdown markdown renderer: full API, plugins, remend, performance |
+| `references/security.md` | Firewall/WAF rules, BotID, rate limiting, DDoS, prompt injection, cost protection |
 
 ## Quick Start Patterns
 
@@ -184,6 +186,58 @@ export async function userOnboarding(email: string) {
   await sendWelcomeEmail(user);
   await sleep('3 days');
   await sendFollowUpEmail(user);
+}
+```
+
+### Pattern 6: Secure AI Chat Endpoint (BotID + Rate Limiting + Auth)
+
+```typescript
+// instrumentation-client.ts — client-side BotID setup
+import { initBotId } from 'botid/client/core';
+initBotId({
+  protect: [{ path: '/api/chat', method: 'POST' }],
+});
+```
+
+```typescript
+// app/api/chat/route.ts — layered server-side protection
+import { checkBotId } from 'botid/server';
+import { checkRateLimit } from '@vercel/firewall';
+import { streamText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { auth } from '@/auth';
+
+export const maxDuration = 30;
+
+export async function POST(req: Request) {
+  // Layer 1: Authentication
+  const session = await auth();
+  if (!session) return new Response('Unauthorized', { status: 401 });
+
+  // Layer 2: Bot detection
+  const { isBot } = await checkBotId();
+  if (isBot) return Response.json({ error: 'Access denied' }, { status: 403 });
+
+  // Layer 3: Rate limiting (per user)
+  const { rateLimited } = await checkRateLimit('ai-chat-limit', {
+    request: req,
+    rateLimitKey: session.user.id,
+  });
+  if (rateLimited) return Response.json({ error: 'Rate limit exceeded' }, { status: 429 });
+
+  // Layer 4: Input sanitization + resource limits
+  const { messages } = await req.json();
+  const sanitized = messages.filter((m: { role: string }) => m.role !== 'system');
+
+  const result = streamText({
+    model: openai('gpt-4o'),
+    system: 'You are a helpful assistant.',
+    messages: sanitized,
+    maxTokens: 4096,
+    maxSteps: 5,
+    abortSignal: req.signal,
+  });
+  return result.toDataStreamResponse();
 }
 ```
 
