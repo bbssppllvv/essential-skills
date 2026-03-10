@@ -541,3 +541,72 @@ Central model delegates to specialized workers.
 
 ### 5. Evaluator-Optimizer
 Iterative generation with quality gates (max N iterations).
+
+---
+
+## Claim Deployments
+
+Enable AI agents to create full-stack applications, deploy them to Vercel, and transfer ownership to users. This pattern supports building "vibe coding" tools where an AI generates and deploys a project, then hands it to the end user.
+
+### How It Works
+
+1. **AI agent creates a project** on your Vercel team (using Vercel REST API)
+2. **Agent deploys code** to the project
+3. **User claims the deployment** — ownership transfers from your team to theirs via a claim token
+
+### Setup
+
+```typescript
+// 1. Create deployment as your team
+const deployment = await fetch('https://api.vercel.com/v13/deployments', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.VERCEL_TOKEN}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    name: 'user-generated-app',
+    target: 'production',
+    files: deploymentFiles,
+    projectSettings: { framework: 'nextjs' },
+  }),
+});
+
+// 2. Generate a claim token for the deployment
+const claim = await fetch(
+  `https://api.vercel.com/v1/claim/deployment?deploymentId=${deployment.id}`,
+  {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.VERCEL_TOKEN}` },
+  }
+);
+const { claimToken } = await claim.json();
+
+// 3. Give the user a claim URL
+const claimUrl = `https://vercel.com/claim/${claimToken}`;
+// User visits this URL → project transfers to their Vercel account
+```
+
+### Use Cases
+
+- **AI app builders**: Users describe an app, AI generates it, deploys to Vercel, user claims it
+- **Template generators**: Dynamic template creation with pre-configured settings
+- **Code education**: AI generates project exercises, students claim and iterate
+
+### Integration with Sandbox
+
+Combine with Vercel Sandbox for a build-then-deploy pattern:
+
+```typescript
+// 1. AI builds in sandbox (safe, isolated)
+const sandbox = await Sandbox.create({ runtime: 'node24' });
+await sandbox.writeFiles(generatedFiles);
+await sandbox.runCommand('npm', ['install']);
+await sandbox.runCommand('npm', ['run', 'build']);
+
+// 2. Export and deploy
+const buildOutput = await sandbox.readFileToBuffer({ path: 'out/' });
+// Deploy via Vercel API...
+
+// 3. Generate claim URL for user
+```

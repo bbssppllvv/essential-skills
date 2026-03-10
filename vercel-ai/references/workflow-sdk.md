@@ -374,3 +374,113 @@ Workflow observability is built into the Vercel dashboard on your project page.
 | **AI agents** | Long-running agents that survive crashes |
 | **RAG pipelines** | Multi-hour data ingestion with crash survival |
 | **Integration flows** | Coordinate APIs with automatic retries |
+
+---
+
+## Vercel Queues
+
+Managed message queue built into Vercel for background processing, fan-out, and async task execution.
+
+**Package**: `npm install @vercel/queue`
+
+### Core Concepts
+
+- **Topics**: Named message channels (e.g., `email-notifications`, `image-processing`)
+- **Consumer Groups**: Multiple consumers can process messages from the same topic independently
+- **Delivery modes**: Push (webhook-style, Vercel invokes your function) and Poll (your code pulls messages)
+- **At-least-once delivery**: Messages are guaranteed to be delivered at least once; design consumers to be idempotent
+
+### Setup
+
+```typescript
+// lib/queue.ts
+import { Queue } from '@vercel/queue';
+
+export const emailQueue = new Queue('email-notifications');
+export const imageQueue = new Queue('image-processing');
+```
+
+### Publishing Messages
+
+```typescript
+import { emailQueue } from '@/lib/queue';
+
+// Publish a single message
+await emailQueue.publish({
+  to: 'user@example.com',
+  subject: 'Welcome!',
+  template: 'onboarding',
+});
+
+// Publish with options
+await emailQueue.publish(
+  { orderId: '123', action: 'process' },
+  {
+    delay: '5m',           // Delay delivery by 5 minutes
+    deduplicationId: '123', // Prevent duplicate processing
+  }
+);
+```
+
+### Consuming Messages (Push Mode)
+
+```typescript
+// app/api/queue/email/route.ts
+import { Queue } from '@vercel/queue';
+
+const queue = new Queue('email-notifications');
+
+export const POST = queue.consumer(async (message) => {
+  const { to, subject, template } = message.body;
+  await sendEmail(to, subject, template);
+  // Message is auto-acknowledged on success
+  // Throwing an error triggers retry
+});
+```
+
+### Consuming Messages (Poll Mode)
+
+```typescript
+import { Queue } from '@vercel/queue';
+
+const queue = new Queue('image-processing');
+
+// In a long-running process or cron job
+const messages = await queue.poll({ maxMessages: 10, waitTime: '20s' });
+
+for (const msg of messages) {
+  await processImage(msg.body);
+  await msg.acknowledge();
+}
+```
+
+### AI Use Case: Background Embedding Generation
+
+```typescript
+// When a document is uploaded, queue embedding generation
+await embeddingQueue.publish({ documentId: doc.id, content: doc.text });
+
+// Consumer generates embeddings asynchronously
+export const POST = embeddingQueue.consumer(async (message) => {
+  const { documentId, content } = message.body;
+  const { embedding } = await embed({
+    model: openai.embeddingModel('text-embedding-3-small'),
+    value: content,
+  });
+  await db.embeddings.insert({ documentId, vector: embedding });
+});
+```
+
+### Queue + Workflow Integration
+
+Queues complement Workflows — use queues for high-throughput fan-out tasks, workflows for complex multi-step orchestration:
+
+```typescript
+export async function processUpload(fileId: string) {
+  'use workflow';
+  const file = await loadFile(fileId);
+  // Fan out processing to queues
+  await imageQueue.publish({ fileId, action: 'thumbnail' });
+  await imageQueue.publish({ fileId, action: 'optimize' });
+  await embeddingQueue.publish({ fileId, content: file.text });
+}

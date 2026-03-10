@@ -253,13 +253,14 @@ export async function POST(request: Request) {
 When you need full control or aren't on Vercel:
 
 ```typescript
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { Ratelimit } from '@upstash/ratelimit';
 import { streamText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
+const redis = Redis.fromEnv();
 const ratelimit = new Ratelimit({
-  redis: kv,
+  redis,
   limiter: Ratelimit.fixedWindow(5, '30s'),
 });
 

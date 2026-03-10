@@ -16,6 +16,8 @@ This skill covers the full Vercel AI stack for building production-grade AI appl
 | **Chat SDK** | `chat` | Cross-platform bots (Slack, Discord, Teams, GitHub, Telegram, Linear) |
 | **Workflow DevKit** | `workflow` | Durable, resumable workflows with `"use workflow"` / `"use step"` directives |
 | **Security** | `botid`, `@vercel/firewall` | Firewall/WAF, BotID bot detection, rate limiting, DDoS, abuse protection |
+| **Platform** | `@vercel/functions`, `@vercel/blob` | Fluid Compute, streaming, storage, feature flags, caching, pricing |
+| **Sandbox** | `@vercel/sandbox` | Isolated code execution in Firecracker microVMs, snapshots, network policies |
 
 ## How to Use This Skill
 
@@ -40,6 +42,8 @@ Read reference files as needed for the specific domain you're working in:
 | `references/data-stream-protocol.md` | SSE protocol for custom backends and native mobile clients (SwiftUI) |
 | `references/streamdown.md` | Streamdown markdown renderer: full API, plugins, remend, performance |
 | `references/security.md` | Firewall/WAF rules, BotID, rate limiting, DDoS, prompt injection, cost protection |
+| `references/vercel-platform.md` | Fluid Compute, function config, streaming, @vercel/functions, storage, feature flags, pricing, limits |
+| `references/vercel-sandbox.md` | Sandbox SDK, AI agent integration, snapshots, network policies, credential brokering |
 
 ## Quick Start Patterns
 
