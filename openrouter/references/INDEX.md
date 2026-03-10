@@ -125,7 +125,6 @@
 - [Langfuse](guides/community/langfuse.md)
 - [Mastra](guides/community/mastra.md)
 - [OpenAI SDK](guides/community/openai-sdk.md) — Drop-in replacement
-- [Anthropic Agent SDK](guides/community/anthropic-agent-sdk.md)
 - [PydanticAI](guides/community/pydantic-ai.md)
 - [TanStack AI](guides/community/tanstack-ai.md)
 - [Vercel AI SDK](guides/community/vercel-ai-sdk.md)

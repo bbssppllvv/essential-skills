@@ -26,7 +26,7 @@ import json
 
 load_dotenv()  # load environment variables from .env
 
-MODEL = "anthropic/claude-3-7-sonnet"
+MODEL = "anthropic/claude-sonnet-4"
 
 SERVER_CONFIG = {
     "command": "npx",

@@ -14,14 +14,14 @@ Two main APIs:
 | API | Transport | Model | Use Case |
 |-----|-----------|-------|----------|
 | Real-Time | WebSocket `wss://stt-rt.soniox.com/transcribe-websocket` | `stt-rt-v4` | Live audio streaming, token-by-token results |
-| Async | REST `https://stt-async.soniox.com/v1/` | `stt-async-v4` | Pre-recorded files, batch processing |
+| Async | REST `https://api.soniox.com/v1/` | `stt-async-v4` | Pre-recorded files, batch processing |
 
 Authentication: `Authorization: Bearer <API_KEY>` header (or `api_key` query param for WebSocket).
 
 ## Quick Start — Real-Time WebSocket
 
 1. Connect to `wss://stt-rt.soniox.com/transcribe-websocket?api_key=YOUR_KEY`
-2. Send JSON config: `{"type": "start", "model": "stt-rt-v4", "encoding": "pcm_s16le", "sample_rate_hertz": 16000}`
+2. Send JSON config: `{"model": "stt-rt-v4", "audio_format": "pcm_s16le", "sample_rate": 16000}`
 3. Stream raw audio bytes
 4. Receive JSON tokens: `{"tokens": [{"text": "hello", "is_final": true, "start_ms": 100, "end_ms": 500}]}`
 5. Close connection when done
@@ -32,13 +32,13 @@ Key token fields: `text`, `is_final` (false=provisional, true=confirmed), `start
 
 ```bash
 # Upload and transcribe
-curl -X POST https://stt-async.soniox.com/v1/transcriptions \
+curl -X POST https://api.soniox.com/v1/transcriptions \
   -H "Authorization: Bearer $API_KEY" \
   -F model=stt-async-v4 \
   -F audio_file=@recording.mp3
 
 # Poll for result
-curl https://stt-async.soniox.com/v1/transcriptions/{id} \
+curl https://api.soniox.com/v1/transcriptions/{id} \
   -H "Authorization: Bearer $API_KEY"
 ```
 
@@ -53,10 +53,7 @@ Common parameters sent in start config (real-time) or request body (async):
 | `language_hints_strict` | bool | Restrict recognition to hinted languages |
 | `enable_language_identification` | bool | Detect language per token |
 | `enable_speaker_diarization` | bool | Label speakers (up to 15) |
-| `enable_one_way_translation` | bool | Translate to target language |
-| `translation_target_language` | string | ISO code for translation target |
-| `enable_two_way_translation` | bool | Bidirectional translation |
-| `two_way_translation_language_1/2` | string | Languages for two-way mode |
+| `translation` | object | Translation config: `{"type": "one_way", "target_language": "fr"}` or `{"type": "two_way", "language_a": "en", "language_b": "fr"}` |
 | `context` | object | Domain context (see below) |
 | `max_endpoint_delay_ms` | int | 500-3000ms, semantic endpoint detection (real-time only) |
 
@@ -65,7 +62,10 @@ Common parameters sent in start config (real-time) or request body (async):
 ```json
 {
   "context": {
-    "general": {"title": "Medical Consultation", "domain": "healthcare"},
+    "general": [
+      {"key": "domain", "value": "Healthcare"},
+      {"key": "topic", "value": "Medical Consultation"}
+    ],
     "text": "Background: Patient discussing cardiac symptoms...",
     "terms": ["myocardial infarction", "stent", "angioplasty"],
     "translation_terms": [
@@ -75,7 +75,7 @@ Common parameters sent in start config (real-time) or request body (async):
 }
 ```
 
-Max 8000 tokens. Use `context_version: 2` with v4 models.
+Max 8000 tokens.
 
 ## Reference Files
 
@@ -101,7 +101,7 @@ task.resume()
 
 // Send start config
 let config = """
-{"type":"start","model":"stt-rt-v4","encoding":"pcm_s16le","sample_rate_hertz":16000}
+{"model":"stt-rt-v4","audio_format":"pcm_s16le","sample_rate":16000}
 """
 task.send(.string(config)) { error in /* handle */ }
 
@@ -143,6 +143,6 @@ Regional endpoints available:
 
 | Region | Real-Time Endpoint | Async Endpoint |
 |--------|-------------------|----------------|
-| US (default) | `stt-rt.soniox.com` | `stt-async.soniox.com` |
-| EU | `stt-rt-eu.soniox.com` | `stt-async-eu.soniox.com` |
-| Japan | `stt-rt-jp.soniox.com` | `stt-async-jp.soniox.com` |
+| US (default) | `stt-rt.soniox.com` | `api.soniox.com` |
+| EU | `stt-rt.eu.soniox.com` | `api.eu.soniox.com` |
+| Japan | `stt-rt-jp.soniox.com` | `api.jp.soniox.com` |

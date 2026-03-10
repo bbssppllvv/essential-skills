@@ -43,7 +43,7 @@ client = openai.OpenAI(
 )
 
 response = client.chat.completions.create(
-    model="anthropic/claude-3.5-sonnet",
+    model="anthropic/claude-sonnet-4",
     messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Tell me a fun fact about space."}
@@ -75,7 +75,7 @@ def analyze_text(text: str):
 @observe()
 def summarize_text(text: str):
     return client.chat.completions.create(
-        model="openai/gpt-3.5-turbo",
+        model="openai/gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You summarize texts concisely."},
             {"role": "user", "content": f"Summarize:\n{text}"}
@@ -86,7 +86,7 @@ def summarize_text(text: str):
 @observe()
 def analyze_sentiment(summary: str):
     return client.chat.completions.create(
-        model="openai/gpt-3.5-turbo",
+        model="openai/gpt-4o-mini",
         messages=[
             {"role": "system", "content": "You analyze sentiment."},
             {"role": "user", "content": f"Analyze sentiment:\n{summary}"}

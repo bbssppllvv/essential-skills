@@ -105,7 +105,7 @@ OpenRouter traces include the following key attributes:
 **Filter by specific model:**
 
 ```traceql
-{ resource.service.name = "openrouter" && span.gen_ai.request.model = "openai/gpt-4-turbo" }
+{ resource.service.name = "openrouter" && span.gen_ai.request.model = "openai/gpt-4o" }
 ```
 
 **Find slow requests (> 5 seconds):**

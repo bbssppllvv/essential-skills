@@ -18,8 +18,8 @@ The customer state object contains:
 With that single object, you have all the required information to check if you should provision access to your service or not.
 
 **API Endpoints:**
-* `GET /customers/state-external` — Get Customer State by External ID (using your own customer ID)
-* `GET /customers/state` — Get Customer State by internal Polar customer ID
+* `GET /v1/customers/external/{external_id}/state` — Get Customer State by External ID (using your own customer ID)
+* `GET /v1/customers/{id}/state` — Get Customer State by internal Polar customer ID
 
 ## The `customer.state_changed` Webhook
 

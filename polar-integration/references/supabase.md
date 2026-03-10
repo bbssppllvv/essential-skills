@@ -68,6 +68,7 @@ export const POST = Webhooks({
 * `onCheckoutCreated` - Triggered when a checkout is created
 * `onCheckoutUpdated` - Triggered when a checkout is updated
 * `onOrderCreated` - Triggered when an order is created
+* `onOrderUpdated` - Triggered when an order is updated
 * `onOrderPaid` - Triggered when an order is paid
 * `onOrderRefunded` - Triggered when an order is refunded
 * `onRefundCreated` - Triggered when a refund is created
@@ -86,7 +87,11 @@ export const POST = Webhooks({
 * `onBenefitGrantCreated` - Triggered when a benefit grant is created
 * `onBenefitGrantUpdated` - Triggered when a benefit grant is updated
 * `onBenefitGrantRevoked` - Triggered when a benefit grant is revoked
+* `onBenefitGrantCycled` - Triggered when a benefit grant is cycled
 * `onCustomerCreated` - Triggered when a customer is created
 * `onCustomerUpdated` - Triggered when a customer is updated
 * `onCustomerDeleted` - Triggered when a customer is deleted
 * `onCustomerStateChanged` - Triggered when a customer state changes
+* `onCustomerSeatAssigned` - Triggered when a customer seat is assigned
+* `onCustomerSeatClaimed` - Triggered when a customer seat is claimed
+* `onCustomerSeatRevoked` - Triggered when a customer seat is revoked

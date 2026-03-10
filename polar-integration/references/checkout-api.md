@@ -136,8 +136,7 @@ with Polar(
 ) as polar:
 
     checkout = polar.checkouts.create(request={
-        "allow_discount_codes": True,
-        "product_id": "<value>",
+        "products": ["<product_id>"],
     })
 
     print(checkout.url)

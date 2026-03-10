@@ -23,7 +23,7 @@ Obtain an API key from [openrouter.ai/settings/keys](https://openrouter.ai/setti
 ## Basic Usage
 
 ```typescript
-import OpenRouter from '@openrouter/sdk';
+import { OpenRouter } from '@openrouter/sdk';
 
 const client = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY

@@ -224,10 +224,10 @@ import {
   <ConfirmationRequest>
     Tool wants to delete a file. Allow?
     <ConfirmationActions>
-      <ConfirmationAction onClick={() => addToolApprovalResponse({ approvalId: part.approval.id, approve: true })}>
+      <ConfirmationAction onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: true })}>
         Accept
       </ConfirmationAction>
-      <ConfirmationAction onClick={() => addToolApprovalResponse({ approvalId: part.approval.id, approve: false })}>
+      <ConfirmationAction onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: false })}>
         Reject
       </ConfirmationAction>
     </ConfirmationActions>
@@ -479,8 +479,8 @@ export default function Chatbot() {
                             <ConfirmationRequest>
                               Allow tool execution?
                               <ConfirmationActions>
-                                <ConfirmationAction onClick={() => addToolApprovalResponse({ approvalId: part.approval.id, approve: true })}>Accept</ConfirmationAction>
-                                <ConfirmationAction onClick={() => addToolApprovalResponse({ approvalId: part.approval.id, approve: false })}>Reject</ConfirmationAction>
+                                <ConfirmationAction onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: true })}>Accept</ConfirmationAction>
+                                <ConfirmationAction onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: false })}>Reject</ConfirmationAction>
                               </ConfirmationActions>
                             </ConfirmationRequest>
                             <ConfirmationAccepted>Approved</ConfirmationAccepted>

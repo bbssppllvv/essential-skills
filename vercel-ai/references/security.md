@@ -40,7 +40,7 @@ Request → DDoS Mitigation (auto) → IP Blocking → Custom Rules → Managed 
 | App | BotID (invisible verification) | All (Basic free, Deep Analysis $1/1k calls) | Detect bots without CAPTCHAs |
 | App | `@vercel/firewall` SDK | All | Programmatic rate limiting with custom keys |
 | App | Auth + entitlement quotas | All (your code) | Per-user/tier usage limits |
-| App | `maxTokens`, `maxSteps`, `maxDuration` | All | Cap AI resource consumption |
+| App | `maxTokens`, `stopWhen`, `maxDuration` | All | Cap AI resource consumption |
 | CI/CD | `eslint-plugin-vercel-ai-security` | All | 19 OWASP LLM Top 10 lint rules |
 | Billing | Spend Management | Pro+ | Auto-pause at budget limit |
 
@@ -550,7 +550,7 @@ AI routes are high-value targets because each request triggers expensive model i
 
 ```typescript
 // app/api/chat/route.ts
-import { streamText } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
 export const maxDuration = 30; // Hard cap on streaming time
@@ -565,9 +565,9 @@ export async function POST(req: Request) {
     model: openai('gpt-4o'),
     system: 'You are a helpful assistant.', // Server-controlled only
     messages: sanitized,
-    maxTokens: 4096,         // Cap output tokens
-    maxSteps: 5,             // Prevent infinite agent loops
-    abortSignal: req.signal, // Honor client disconnection
+    maxTokens: 4096,              // Cap output tokens
+    stopWhen: stepCountIs(5),     // Prevent infinite agent loops
+    abortSignal: req.signal,      // Honor client disconnection
   });
 
   return result.toDataStreamResponse();
@@ -606,13 +606,13 @@ Prevent data exfiltration through markdown rendering (e.g., `![](https://attacke
 ```typescript
 // UNSAFE: model can choose tenantId
 const unsafeTool = tool({
-  parameters: z.object({ tenantId: z.string(), query: z.string() }),
+  inputSchema: z.object({ tenantId: z.string(), query: z.string() }),
   execute: async ({ tenantId, query }) => db.query(tenantId, query),
 });
 
 // SAFE: tenantId bound to the authenticated user
 const safeTool = tool({
-  parameters: z.object({ query: z.string() }),
+  inputSchema: z.object({ query: z.string() }),
   execute: async ({ query }) => db.query(authenticatedUser.tenantId, query),
 });
 ```
@@ -621,7 +621,7 @@ const safeTool = tool({
 ```typescript
 const deleteTool = tool({
   description: 'Delete a document',
-  parameters: z.object({ docId: z.string() }),
+  inputSchema: z.object({ docId: z.string() }),
   needsApproval: true, // UI shows approval prompt before execution
   execute: async ({ docId }) => { /* ... */ },
 });
@@ -719,12 +719,14 @@ Secure webhooks by comparing `x-vercel-signature` header.
 ### AI SDK Resource Guards
 
 ```typescript
+import { streamText, stepCountIs } from 'ai';
+
 const result = streamText({
   model: openai('gpt-4o'),
   messages,
-  maxTokens: 4096,          // Hard cap on output
-  maxSteps: 5,              // Prevent infinite agent loops
-  abortSignal: req.signal,  // Honor client disconnection
+  maxTokens: 4096,              // Hard cap on output
+  stopWhen: stepCountIs(5),     // Prevent infinite agent loops
+  abortSignal: req.signal,      // Honor client disconnection
 });
 
 export const maxDuration = 30; // Limit streaming to 30 seconds

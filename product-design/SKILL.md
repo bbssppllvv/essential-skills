@@ -142,6 +142,12 @@ Research is about understanding WHY choices work, not copying WHAT everyone does
 
 **Proximity = relationship.** Closer = connected, farther = separate.
 
+**Density:** Match spacing to context — dense for dashboards (8-12px padding), default for product UI (16-24px), spacious for marketing (24-32px).
+
+**Responsive:** Structural spacing (sections, containers) scales down 0.5-0.75x on mobile. Internal component spacing (icon-to-text, button padding) stays fixed.
+
+> Full guide: [references/spacing.md](references/spacing.md)
+
 ## Avoiding AI Slop
 
 > **NO INDIGO/VIOLET** — Unless explicitly requested. Every LLM defaults to indigo (#6366f1). It's the biggest tell of AI-generated design. Choose brand-appropriate colors from research.
@@ -231,6 +237,7 @@ One style per product (outline OR solid). No mixing libraries.
 |-------|---------------|
 | [typography.md](references/typography.md) | Scale, pairing, weight, line-height, letter-spacing, responsive type, tokens |
 | [color.md](references/color.md) | Palette structure, neutrals, primary/semantic colors, dark theme, OKLCH, tokens |
+| [spacing.md](references/spacing.md) | Spacing scale, component patterns, density, proximity, responsive adjustments |
 | [motion.md](references/motion.md) | Micro-interactions, timing, easing, reduced motion, animation tokens |
 | [icons.md](references/icons.md) | Grid system, optical corrections, accessibility, icon+text pairing, libraries |
 | [craft-details.md](references/craft-details.md) | Focus states, forms, images, touch, performance, accessibility, navigation |

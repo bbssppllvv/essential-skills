@@ -392,14 +392,19 @@ Gradients are allowed when:
 3. **Text on gradients** — Ensure contrast works across the entire gradient, not just the start.
 
 ```css
-/* Acceptable */
+/* Acceptable — warm coral to sand */
 .hero-badge {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #E85D4A 0%, #D4A574 100%);
 }
 
-/* Problematic */
+/* Also acceptable — charcoal gradient */
+.hero-badge-alt {
+  background: linear-gradient(135deg, #2D3436 0%, #636E72 100%);
+}
+
+/* Problematic — rainbow circus */
 .card {
-  background: linear-gradient(90deg, 
+  background: linear-gradient(90deg,
     #ff6b6b, #feca57, #48dbfb, #ff9ff3);
 }
 ```
@@ -410,28 +415,9 @@ Gradients are allowed when:
 
 Structural problems that reveal unintentional design:
 
-### 🚨 THE #1 AI SLOP INDICATOR: INDIGO/VIOLET
+### Indigo/Violet Warning
 
-**This deserves its own section because it's THAT important.**
-
-Every LLM, every AI code generator, every design tool defaults to indigo/violet (`#6366f1`, `#8b5cf6`, or similar). This has become the universal fingerprint of AI-generated design.
-
-**Before using any purple-family color, ask:**
-1. Does the brand explicitly require purple?
-2. Did research references use purple (and why)?
-3. Is there a semantic reason (not just "looks modern")?
-4. Would a senior designer question this choice?
-
-**If you can't answer YES to at least one of these—choose a different color.**
-
-Safe alternatives when you need an accent:
-- Blue (`#2563eb`) — trust, stability, professional
-- Teal (`#0d9488`) — fresh, modern, distinctive
-- Green (`#16a34a`) — growth, success, natural
-- Orange (`#ea580c`) — energy, action, warmth
-- Brand-specific color from research
-
-**The rule:** Indigo is BANNED unless explicitly justified by brand requirements.
+**Indigo/violet is the #1 AI-generated design tell.** Do not use it unless explicitly justified by brand requirements. See `anti-ai-slop.md` for the full rationale on avoiding default AI color palettes.
 
 ### Other Red Flags
 

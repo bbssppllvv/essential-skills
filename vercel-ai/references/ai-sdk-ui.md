@@ -312,7 +312,7 @@ Always iterate over `message.parts` and switch on `part.type`:
 // Convert between UI and Model messages
 import { convertToModelMessages } from 'ai';
 
-const modelMessages = convertToModelMessages(uiMessages);
+const modelMessages = await convertToModelMessages(uiMessages);
 ```
 
 > **v6 Breaking Change**: `convertToModelMessages()` is now **async** — you must `await` it:

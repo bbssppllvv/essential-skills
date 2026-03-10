@@ -60,7 +60,7 @@ const openrouter = createOpenRouter({
 
 // Create an agent
 export const assistant = new Agent({
-  model: openrouter('anthropic/claude-3-opus'),
+  model: openrouter('anthropic/claude-opus-4'),
   name: 'Assistant',
   instructions:
     'You are a helpful assistant with expertise in technology and science.',
@@ -115,7 +115,7 @@ const openrouter = createOpenRouter({
 
 // Create an agent using OpenRouter
 const assistant = new Agent({
-  model: openrouter('anthropic/claude-3-opus'),
+  model: openrouter('anthropic/claude-opus-4'),
   name: 'Assistant',
   instructions: 'You are a helpful assistant.',
 });
@@ -145,15 +145,15 @@ const openrouter = createOpenRouter({
 
 // Create agents using different models
 const claudeAgent = new Agent({
-  model: openrouter('anthropic/claude-3-opus'),
+  model: openrouter('anthropic/claude-opus-4'),
   name: 'ClaudeAssistant',
   instructions: 'You are a helpful assistant powered by Claude.',
 });
 
 const gptAgent = new Agent({
-  model: openrouter('openai/gpt-4'),
+  model: openrouter('openai/gpt-4o'),
   name: 'GPTAssistant',
-  instructions: 'You are a helpful assistant powered by GPT-4.',
+  instructions: 'You are a helpful assistant powered by GPT-4o.',
 });
 
 // Use different agents based on your needs
@@ -194,7 +194,7 @@ const openrouter = createOpenRouter({
 
 // Create an agent with model-specific options
 const chefAgent = new Agent({
-  model: openrouter('anthropic/claude-3.7-sonnet', {
+  model: openrouter('anthropic/claude-sonnet-4', {
     extraBody: {
       reasoning: {
         max_tokens: 10,

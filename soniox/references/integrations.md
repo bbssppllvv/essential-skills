@@ -44,7 +44,7 @@ const { api_key } = await (await fetch("/temporary-api-key")).json();
 const rt = new RecordTranscribe({ apiKey: api_key });
 
 rt.start({
-  model: "stt-rt-preview-v2",
+  model: "stt-rt-v4",
   languageHints: ["en"],
   onPartialResult: (result) => {
     for (const token of result.tokens) {
@@ -74,7 +74,7 @@ wss.on("connection", (ws) => {
     soniox.send(JSON.stringify({
       api_key: process.env.SONIOX_API_KEY,
       audio_format: "auto",
-      model: "stt-rt-preview-v2",
+      model: "stt-rt-v4",
     }));
     ready = true;
     while (queue.length > 0) soniox.send(queue.shift());
@@ -101,7 +101,7 @@ import { soniox } from "@soniox/vercel-ai-sdk-provider";
 import { experimental_transcribe as transcribe } from "ai";
 
 const { text } = await transcribe({
-  model: soniox.transcription("stt-async-v3"),
+  model: soniox.transcription("stt-async-v4"),
   audio: new URL("https://soniox.com/media/examples/coffee_shop.mp3"),
   providerOptions: {
     soniox: {
@@ -137,7 +137,7 @@ import { generateTranscription } from "@tanstack/ai";
 import { sonioxTranscription } from "@soniox/tanstack-ai-adapter";
 
 const result = await generateTranscription({
-  adapter: sonioxTranscription("stt-async-v3"),
+  adapter: sonioxTranscription("stt-async-v4"),
   audio: new URL("https://soniox.com/media/examples/coffee_shop.mp3"),
   modelOptions: {
     enableSpeakerDiarization: true,

@@ -234,13 +234,13 @@ import { openai } from '@ai-sdk/openai';
 
 // Single embedding
 const { embedding } = await embed({
-  model: openai.textEmbeddingModel('text-embedding-3-small'),
+  model: openai.embeddingModel('text-embedding-3-small'),
   value: 'Search query text',
 });
 
 // Batch embeddings (for RAG ingestion)
 const { embeddings } = await embedMany({
-  model: openai.textEmbeddingModel('text-embedding-3-small'),
+  model: openai.embeddingModel('text-embedding-3-small'),
   values: ['doc chunk 1', 'doc chunk 2', 'doc chunk 3'],
   maxParallelCalls: 5, // Parallel processing
 });
@@ -255,14 +255,14 @@ const similarity = cosineSimilarity(embedding1, embedding2);
 ```typescript
 // 1. Embed and store documents
 const { embeddings } = await embedMany({
-  model: openai.textEmbeddingModel('text-embedding-3-small'),
+  model: openai.embeddingModel('text-embedding-3-small'),
   values: documentChunks,
 });
 // Store embeddings in vector DB (Pinecone, Upstash, etc.)
 
 // 2. Query: embed the question, find similar chunks
 const { embedding } = await embed({
-  model: openai.textEmbeddingModel('text-embedding-3-small'),
+  model: openai.embeddingModel('text-embedding-3-small'),
   value: userQuestion,
 });
 const relevantChunks = await vectorDB.query(embedding, { topK: 5 });

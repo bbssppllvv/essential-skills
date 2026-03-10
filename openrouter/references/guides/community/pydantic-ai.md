@@ -23,7 +23,7 @@ from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
 
 model = OpenAIModel(
-    "anthropic/claude-3.5-sonnet",  # or any other OpenRouter model
+    "anthropic/claude-sonnet-4",  # or any other OpenRouter model
     base_url="https://openrouter.ai/api/v1",
     api_key="sk-or-...",
 )
@@ -35,7 +35,7 @@ print(result)
 
 ## Key Configuration Parameters
 
-- **Model identifier**: Specify any supported OpenRouter model (example: `anthropic/claude-3.5-sonnet`)
+- **Model identifier**: Specify any supported OpenRouter model (example: `anthropic/claude-sonnet-4`)
 - **Base URL**: `https://openrouter.ai/api/v1`
 - **Authentication**: Provide your OpenRouter API key in the `sk-or-` format
 

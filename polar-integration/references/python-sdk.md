@@ -18,12 +18,12 @@ s = Polar(
     access_token="<YOUR_BEARER_TOKEN_HERE>",
 )
 
-res = s.users.benefits.list()
+res = s.benefits.list()
 
 if res is not None:
     while True:
         # handle items
-        res = res.Next()
+        res = res.next()
         if res is None:
             break
 ```

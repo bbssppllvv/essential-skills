@@ -19,7 +19,7 @@ description: >
 Swift SDK for fully local audio AI on Apple platforms. All inference runs on Apple Neural Engine (ANE) via CoreML — no cloud, no latency, no data leaves the device.
 
 **Repository**: `https://github.com/FluidInference/FluidAudio.git`
-**Version**: 0.7.9+
+**Version**: 0.12.1+
 **Platforms**: macOS 14.0+ / iOS 17.0+ (arm64 only, Apple Silicon)
 
 ## Quick Start
@@ -41,7 +41,7 @@ Models auto-download from HuggingFace on first use, then cache at `~/.cache/flui
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/FluidInference/FluidAudio.git", from: "0.7.9")
+    .package(url: "https://github.com/FluidInference/FluidAudio.git", from: "0.12.1")
 ]
 // Product: "FluidAudio" (core, Apache 2.0) or "FluidAudioTTS" (+ Kokoro TTS, GPL-3.0)
 ```

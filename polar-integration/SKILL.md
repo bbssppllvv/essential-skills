@@ -35,6 +35,9 @@ npm install @polar-sh/checkout
 pip install polar-sdk
 ```
 
+> **Note:** The Polar SDK is in active development. Pin versions to avoid breaking changes:
+> `npm install @polar-sh/sdk@^0.46` / `pip install polar-sdk~=0.28`
+
 ### 3. Configure Authentication
 
 Set up environment variables:

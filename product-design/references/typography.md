@@ -228,7 +228,7 @@ Line height (leading) affects readability more than any other property.
 
 | Text Type | Line Height | Why |
 |-----------|-------------|-----|
-| **Body text** | 1.5 – 1.7 | Optimal for reading |
+| **Body text** | 1.5 – 1.6 | Optimal for reading |
 | **Short paragraphs** | 1.4 – 1.5 | Slightly tighter is fine |
 | **Headlines** | 1.0 – 1.2 | Tight, impactful |
 | **Large display** | 0.9 – 1.1 | Very tight, dramatic |

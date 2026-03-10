@@ -76,7 +76,7 @@ Example payload structure:
               "startTimeUnixNano": "1705312800000000000",
               "endTimeUnixNano": "1705312801000000000",
               "attributes": [
-                { "key": "gen_ai.request.model", "value": { "stringValue": "openai/gpt-4" } },
+                { "key": "gen_ai.request.model", "value": { "stringValue": "openai/gpt-4o" } },
                 { "key": "gen_ai.usage.prompt_tokens", "value": { "intValue": "100" } },
                 { "key": "gen_ai.usage.completion_tokens", "value": { "intValue": "50" } }
               ]

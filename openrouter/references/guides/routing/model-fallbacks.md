@@ -29,7 +29,7 @@ const openRouter = new OpenRouter({
 });
 
 const completion = await openRouter.chat.send({
-  models: ['anthropic/claude-3.5-sonnet', 'gryphe/mythomax-l2-13b'],
+  models: ['anthropic/claude-sonnet-4', 'gryphe/mythomax-l2-13b'],
   messages: [
     {
       role: 'user',
@@ -51,7 +51,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    models: ['anthropic/claude-3.5-sonnet', 'gryphe/mythomax-l2-13b'],
+    models: ['anthropic/claude-sonnet-4', 'gryphe/mythomax-l2-13b'],
     messages: [
       {
         role: 'user',
@@ -78,7 +78,7 @@ response = requests.post(
     "Content-Type": "application/json",
   },
   data=json.dumps({
-    "models": ["anthropic/claude-3.5-sonnet", "gryphe/mythomax-l2-13b"],
+    "models": ["anthropic/claude-sonnet-4", "gryphe/mythomax-l2-13b"],
     "messages": [
       {
         "role": "user",
@@ -107,7 +107,7 @@ openai_client = OpenAI(
 completion = openai_client.chat.completions.create(
     model="openai/gpt-4o",
     extra_body={
-        "models": ["anthropic/claude-3.5-sonnet", "gryphe/mythomax-l2-13b"],
+        "models": ["anthropic/claude-sonnet-4", "gryphe/mythomax-l2-13b"],
     },
     messages=[
         {
@@ -134,7 +134,7 @@ async function main() {
   // @ts-expect-error
   const completion = await openrouterClient.chat.completions.create({
     model: 'openai/gpt-4o',
-    models: ['anthropic/claude-3.5-sonnet', 'gryphe/mythomax-l2-13b'],
+    models: ['anthropic/claude-sonnet-4', 'gryphe/mythomax-l2-13b'],
     messages: [
       {
         role: 'user',

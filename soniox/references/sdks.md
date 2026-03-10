@@ -5,6 +5,8 @@
 - [Python SDK](#python-sdk)
 - [Node SDK](#node-sdk)
 - [Web SDK](#web-sdk)
+- [React SDK](#react-sdk)
+- [React Native SDK](#react-native-sdk)
 
 ---
 
@@ -305,7 +307,7 @@ const sonioxClient = new SonioxClient({
 });
 
 sonioxClient.start({
-    model: "stt-rt-preview",
+    model: "stt-rt-v4",
     languageHints: ["en"],
     enableSpeakerDiarization: true,
     enableEndpointDetection: true,
@@ -352,9 +354,23 @@ source.connect(destination);
 source.connect(audioContext.destination);
 
 sonioxClient.start({
-    model: "stt-rt-preview",
+    model: "stt-rt-v4",
     stream: destination.stream,
 });
 
 audioElement.play();
 ```
+
+---
+
+## React SDK
+
+Package: `@soniox/react` (released February 2026)
+Provides React hooks for real-time transcription integration.
+
+---
+
+## React Native SDK
+
+Package: `@soniox/react-native` (released February 2026)
+Enables on-device speech-to-text in React Native applications.

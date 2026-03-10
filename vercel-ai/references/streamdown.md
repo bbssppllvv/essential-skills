@@ -292,7 +292,7 @@ Streamdown powers the `MessageResponse` component in the AI Elements library. `M
 - Security hardening
 
 ```tsx
-import { MessageResponse } from '@ai-elements/message-response';
+import { MessageResponse } from '@/components/ai-elements/message';
 
 // MessageResponse uses Streamdown internally
 <MessageResponse content={message.content} isStreaming={isStreaming} />

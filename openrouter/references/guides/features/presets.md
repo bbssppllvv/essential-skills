@@ -51,12 +51,12 @@ Each preset manages:
 
 **2. Preset Field**
 ```json
-{"model": "openai/gpt-4", "preset": "email-copywriter"}
+{"model": "openai/gpt-4o", "preset": "email-copywriter"}
 ```
 
 **3. Combined Approach**
 ```json
-{"model": "openai/gpt-4@preset/email-copywriter"}
+{"model": "openai/gpt-4o@preset/email-copywriter"}
 ```
 
 ## Important Details

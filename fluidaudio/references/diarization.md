@@ -77,6 +77,20 @@ NVIDIA's end-to-end neural diarization model. Supports up to 4 speakers. No sepa
 
 See `Documentation/Diarization/Sortformer.md` in repo for streaming configuration and architecture details.
 
+```swift
+import FluidAudio
+
+let sortformer = SortformerManager()
+try await sortformer.prepareModels()
+
+let samples = try AudioConverter().resampleAudioFile(path: "meeting.wav")
+let result = try await sortformer.process(audio: samples)
+
+for segment in result.segments {
+    print("Speaker \(segment.speakerId): \(segment.startTimeSeconds)s → \(segment.endTimeSeconds)s")
+}
+```
+
 ## CLI
 
 ```bash

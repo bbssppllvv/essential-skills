@@ -389,7 +389,7 @@ type ToolCall = {
     },
     "cost": 0.00014
   },
-  "model": "openai/gpt-3.5-turbo"
+  "model": "openai/gpt-4o-mini"
 }
 ```
 

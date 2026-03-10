@@ -94,7 +94,7 @@ type MidStreamError = {
 Example SSE event:
 
 ```text
-data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-3.5-turbo","provider":"openai","error":{"code":"server_error","message":"Provider disconnected"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}
+data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","provider":"openai","error":{"code":"server_error","message":"Provider disconnected"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}
 ```
 
 ## OpenAI Responses API Error Events

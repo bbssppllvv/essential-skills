@@ -301,12 +301,12 @@ const { addToolApprovalResponse } = useChat();
           Allow {part.toolName}({JSON.stringify(part.args)})?
           <ConfirmationActions>
             <ConfirmationAction
-              onClick={() => addToolApprovalResponse({ approvalId: part.approval.id, approve: true })}
+              onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: true })}
             >
               Allow
             </ConfirmationAction>
             <ConfirmationAction
-              onClick={() => addToolApprovalResponse({ approvalId: part.approval.id, approve: false })}
+              onClick={() => addToolApprovalResponse({ id: part.approval.id, approved: false })}
             >
               Deny
             </ConfirmationAction>

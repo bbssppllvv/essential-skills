@@ -17,7 +17,7 @@
 ```swift
 // Package.swift
 dependencies: [
-    .package(url: "https://github.com/FluidInference/FluidAudio.git", from: "0.7.9")
+    .package(url: "https://github.com/FluidInference/FluidAudio.git", from: "0.12.1")
 ]
 
 targets: [
@@ -35,15 +35,15 @@ In Xcode: File → Add Package Dependencies → `https://github.com/FluidInferen
 ### CocoaPods
 
 ```ruby
-pod 'FluidAudio', '~> 0.7.8'
+pod 'FluidAudio', '~> 0.12.0'
 ```
 
 Note: CocoaPods uses `cocoapods-spm` for interop. Kokoro TTS is SPM-only.
 
 ### Cross-Platform Wrappers
 
-- React Native/Expo: `@fluidinference/react-native-fluidaudio`
-- Rust/Tauri: `fluidaudio-rs`
+- React Native/Expo: `@fluidinference/react-native-fluidaudio` (availability unverified — may be internal/private)
+- Rust/Tauri: `fluidaudio-rs` (availability unverified — may be internal/private)
 
 ## Products & Licensing
 

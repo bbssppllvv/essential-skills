@@ -99,7 +99,7 @@ const openRouter = new OpenRouter({
 });
 
 const response = await openRouter.chat.send({
-  model: 'openai/gpt-4',
+  model: 'openai/gpt-4o',
   messages: [
     { role: 'user', content: 'What is the weather like in London?' },
   ],
@@ -149,7 +149,7 @@ response = requests.post(
   },
 
   json={
-    "model": "openai/gpt-4",
+    "model": "openai/gpt-4o",
     "messages": [
       {"role": "user", "content": "What is the weather like in London?"},
     ],
@@ -196,7 +196,7 @@ const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    model: 'openai/gpt-4',
+    model: 'openai/gpt-4o',
     messages: [
       { role: 'user', content: 'What is the weather like in London?' },
     ],

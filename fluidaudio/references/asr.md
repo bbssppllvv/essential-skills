@@ -6,6 +6,8 @@
 |---------|-----------|-----------|-------|
 | v3 | `FluidInference/parakeet-tdt-0.6b-v3-coreml` | 25 European languages | Multilingual |
 | v2 | `FluidInference/parakeet-tdt-0.6b-v2-coreml` | English only | Highest recall |
+| Qwen3-ASR | `FluidInference/qwen3-asr-0.6b-coreml` | Multilingual | Qwen3-ASR-0.6B CoreML |
+| EOU | `FluidInference/parakeet-realtime-eou-120m-coreml` | English | Lighter-weight model for real-time end-of-utterance detection |
 
 Architecture: Parakeet Token Duration Transducer (TDT) — 4 CoreML models: preprocessor, encoder, decoder, joint network.
 
@@ -122,6 +124,25 @@ let finalText = try await streamingAsr.finish()
 - **Vocabulary Boosting**: Custom vocabulary integration
 - **CTC Rescoring**: Rescoring mechanism for accuracy improvement
 - **Inverse Text Normalization** (text-processing-rs): Converts spoken-form to written form — "two hundred" → "200", "five dollars" → "$5". Available in Rust and Swift.
+
+## Qwen3-ASR
+
+Qwen3-ASR-0.6B is a multilingual speech recognition model converted to CoreML, added in v0.12.1. It provides broad language coverage beyond the 25 European languages supported by Parakeet TDT v3.
+
+**Model**: `FluidInference/qwen3-asr-0.6b-coreml`
+
+> **Note**: WER may differ from the original PyTorch Qwen3-ASR model due to the CoreML conversion process. Benchmark against your target language/domain before deploying.
+
+```swift
+import FluidAudio
+
+let models = try await AsrModels.downloadAndLoad(version: .qwen3)
+let asrManager = AsrManager(config: .default)
+try await asrManager.initialize(models: models)
+
+let result = try await asrManager.transcribe(audioURL)
+print(result.text)
+```
 
 ## CLI
 

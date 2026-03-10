@@ -163,7 +163,7 @@ Tool calling parameter, following OpenAI's tool calling request shape. For non-O
 ### Tool Choice
 
 - **Key:** `tool_choice`
-- **Type:** array
+- **Type:** string | Object
 
 Controls which (if any) tool is called by the model. `none` means the model will not call any tool. `auto` means the model can pick between generating a message or calling one or more tools. `required` means the model must call one or more tools. Or specify a particular tool.
 

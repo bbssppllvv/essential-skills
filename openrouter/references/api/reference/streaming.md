@@ -308,7 +308,7 @@ Common HTTP status codes:
 If an error occurs after some tokens have already been streamed to the client, OpenRouter cannot change the HTTP status code (which is already 200 OK). Instead, the error is sent as an SSE with unified structure:
 
 ```text
-data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-3.5-turbo","provider":"openai","error":{"code":"server_error","message":"Provider disconnected unexpectedly"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}
+data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"gpt-4o-mini","provider":"openai","error":{"code":"server_error","message":"Provider disconnected unexpectedly"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}
 ```
 
 Mid-stream error characteristics:

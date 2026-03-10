@@ -207,7 +207,7 @@ initBotId({
 // app/api/chat/route.ts — layered server-side protection
 import { checkBotId } from 'botid/server';
 import { checkRateLimit } from '@vercel/firewall';
-import { streamText } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { auth } from '@/auth';
 
@@ -238,7 +238,7 @@ export async function POST(req: Request) {
     system: 'You are a helpful assistant.',
     messages: sanitized,
     maxTokens: 4096,
-    maxSteps: 5,
+    stopWhen: stepCountIs(5),
     abortSignal: req.signal,
   });
   return result.toDataStreamResponse();
@@ -261,7 +261,7 @@ v6 renamed and restructured many APIs from v5. These are the most common mistake
 10. **Structured output**: `Output.object()`, `Output.array()`, `Output.choice()`, `Output.json()`, `Output.text()`
 11. **Tool approval**: Use `needsApproval: true` on tool definition (NOT `experimental_toolCallApproval`)
 12. **Tool part types**: Parts use `tool-{toolName}` pattern. States: `input-streaming`, `input-available`, `approval-requested`, `output-available`
-13. **Embeddings**: Use `provider.textEmbeddingModel('model-name')`
+13. **Embeddings**: Use `provider.embeddingModel('model-name')` (NOT `textEmbeddingModel` — renamed in v6)
 14. **MCP**: Use `createMCPClient()` from `@ai-sdk/mcp`
 15. **Package manager**: Always detect from lockfile (pnpm-lock.yaml \u2192 pnpm, etc.)
 16. **Message types**: `CoreMessage` renamed to `ModelMessage`. Use `convertToModelMessages()` (NOT `convertToCoreMessages` \u2014 renamed and now **async**)
@@ -271,6 +271,7 @@ v6 renamed and restructured many APIs from v5. These are the most common mistake
 20. **OpenAI strict mode**: `strictJsonSchema` defaults to `true` in v6 \u2014 use `.nullable()` not `.optional()` in Zod schemas
 21. **Azure**: `azure()` uses Responses API by default; use `azure.chat()` for Chat Completions. Metadata key: `azure` (not `openai`)
 22. **Migration tool**: Run `npx @ai-sdk/codemod v6` to automate most v5\u21926 changes
+23. **Tool results**: `addToolResult` renamed to `addToolOutput` in v6 (useChat hook)
 
 ## Installing AI Elements
 

@@ -67,8 +67,8 @@ export const models = customProvider({
     reasoning: anthropic('claude-sonnet-4-5', { thinking: { type: 'enabled', budgetTokens: 10000 } }),
     'gpt4o': openai('gpt-4o'),
   },
-  textEmbeddingModels: {
-    embeddings: openai.textEmbeddingModel('text-embedding-3-small'),
+  embeddingModels: {
+    embeddings: openai.embeddingModel('text-embedding-3-small'),
   },
 });
 ```
@@ -296,7 +296,7 @@ Anthropic supports prompt caching for repeated prefixes. Large system prompts an
 
 ```typescript
 const { embeddings } = await embedMany({
-  model: openai.textEmbeddingModel('text-embedding-3-small'),
+  model: openai.embeddingModel('text-embedding-3-small'),
   values: chunks,
   maxParallelCalls: 10, // Parallel processing
 });
