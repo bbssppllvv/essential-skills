@@ -7,6 +7,7 @@ A collection of Claude Code skills — modular reference packages for AI-assiste
 | Skill | Description |
 |-------|-------------|
 | [agent-engineering](agent-engineering/) | Production-grade AI agents, harnesses, tool loops, evals, permissions, multi-agent patterns, and runbooks. |
+| [agent-folder-init](agent-folder-init/) | Add or repair `.agents/` project context, agent docs, session tracking, task management, and coding standards. |
 | [openrouter](openrouter/) | Complete OpenRouter API documentation (178 pages). Routing, models, SDKs, integrations. |
 | [figma-design](figma-design/) | Figma MCP, Plugin API, REST API, design-to-code, canvas automation, and AI design workflows. |
 | [fluidaudio](fluidaudio/) | FluidAudio Swift SDK for on-device audio AI on Apple platforms. ASR (Parakeet TDT), diarization, VAD, TTS via CoreML/ANE. |
@@ -19,7 +20,7 @@ A collection of Claude Code skills — modular reference packages for AI-assiste
 
 ## Usage
 
-Each folder is a self-contained skill with a `SKILL.md` and `references/` directory.
+Each folder is a self-contained skill with a `SKILL.md` and any bundled `references/`, `scripts/`, or `assets/` it needs.
 
 Install a skill into Claude Code:
 
