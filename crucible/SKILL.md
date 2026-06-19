@@ -60,29 +60,36 @@ Pick the smallest panel that covers the real risk. Role diversity matters more t
 
 ## Role Catalog
 
-Choose roles that create useful tension:
+Choose roles that create useful tension. Stances are attention anchors, not fictional characters: use them to sharpen what a reviewer notices, never to encourage roleplay, jokes, lore, banter, or a different output format.
 
-| Role | Use When |
-| --- | --- |
-| Devil's Advocate | A plan needs to be broken before implementation. |
-| Pragmatist | The solution may be overbuilt, slow, or too clever. |
-| Correctness Hunter | Code may have edge-case bugs, broken invariants, or bad assumptions. |
-| Regression Hunter | Existing behavior must not be disturbed. |
-| Security/Privacy Reviewer | Secrets, permissions, automation, user data, or network calls are involved. |
-| Test/QA Reviewer | Coverage, manual QA, flaky assumptions, or release confidence matter. |
-| Maintainability Reviewer | Ownership, boundaries, naming, readability, or future changes are in play. |
-| Performance/Reliability Reviewer | Latency, memory, concurrency, retries, rate limits, or failure modes matter. |
-| Platform Reviewer | Native platform conventions, lifecycle, entitlements, or APIs matter. |
-| Product/User Advocate | The work may miss the user's actual job, trust, or workflow. |
-| UX/Accessibility Reviewer | Screens, flows, interaction states, copy, or accessibility are affected. |
+| Role | Stance | Use When |
+| --- | --- | --- |
+| Devil's Advocate | The Breaker | A plan needs to be broken before implementation. |
+| Pragmatist | The Knife | The solution may be overbuilt, slow, too clever, or larger than the stated goal. |
+| Correctness Hunter | The Invariant Keeper | Code may have edge-case bugs, broken invariants, or bad assumptions. |
+| Regression Hunter | The Historian | Existing behavior must not be disturbed. |
+| Security/Privacy Reviewer | The Lockpick | Secrets, permissions, automation, user data, or network calls are involved. |
+| Test/QA Reviewer | The Prover | Coverage, manual QA, flaky assumptions, or release confidence matter. |
+| Maintainability Reviewer | The Steward | Ownership, boundaries, naming, readability, or future changes are in play. |
+| Performance/Reliability Reviewer | The Stress Tester | Latency, memory, concurrency, retries, rate limits, or failure modes matter. |
+| Platform Reviewer | The Native | Native platform conventions, lifecycle, entitlements, or APIs matter. |
+| Product/User Advocate | The Human | The work may miss the user's actual job, trust, or workflow. |
+| UX/Accessibility Reviewer | The Door Opener | Screens, flows, interaction states, copy, or accessibility are affected. |
+| Evidence Auditor | The Clerk | Findings may drift into vibes, consensus, unsupported claims, or invented context. |
+| Scope Sentinel | The Gatekeeper | Reviewers may turn a bounded task into a wishlist, redesign, or speculative roadmap. |
+| Domain Specialist | The Specialist | A specific domain is central, such as Swift/macOS, payments, AI agents, SEO, legal, or data systems. Name the domain in the prompt. |
 
 Default panels:
 
 - PR review: Correctness Hunter, Regression Hunter, Test/QA Reviewer.
 - Risky PR: Correctness Hunter, Security/Privacy Reviewer, Regression Hunter, Pragmatist.
-- Plan review: Devil's Advocate, Pragmatist, Risk/QA perspective via Test/QA Reviewer.
+- Plan review: Devil's Advocate, Pragmatist, Scope Sentinel.
 - Architecture review: Maintainability Reviewer, Performance/Reliability Reviewer, Pragmatist.
 - Product/UX review: Product/User Advocate, UX/Accessibility Reviewer, Pragmatist.
+- High-uncertainty diagnosis: Devil's Advocate, Evidence Auditor, Domain Specialist when a real domain is central.
+- Scope-sensitive task: Pragmatist, Scope Sentinel, Product/User Advocate.
+
+Use `Domain Specialist` only when the required specialty is explicit and material. Do not use it as a generic smart reviewer.
 
 ## Workflow
 
@@ -103,13 +110,14 @@ Default panels:
 Use this shape and fill only the task-specific blanks:
 
 ```text
-You are the [ROLE] in a crucible review.
+You are the [ROLE] ([STANCE, optional]) in a crucible review.
 
 Task: [what is being reviewed and why]
 Artifact: [diff/files/plan/logs/screenshot/etc.]
 Allowed inspection scope: [whether the reviewer may inspect files beyond the artifact]
 
 Review only from your assigned perspective. Be sharp but evidence-based.
+Use the stance only as an attention lens. Do not roleplay, add personality flourishes, jokes, lore, or theatrical framing.
 Do not invoke Crucible, spawn subagents, or perform a second-level panel review.
 Do not expand the project scope. Do not propose optional enhancements, rewrites, redesigns, speculative future work, or nice-to-haves unless they materially affect the stated goal.
 
@@ -134,6 +142,7 @@ Prefer fewer high-signal findings over broad commentary. Skip nits unless they c
 - Convert accepted feedback into concrete actions: code changes, plan edits, tests, QA notes, or explicit non-actions.
 - Park useful but nonessential ideas as follow-up notes; do not silently expand the current task to include them.
 - Do not run another panel just to arbitrate minor disagreements. The main agent decides.
+- Treat Scope Sentinel feedback as a constraint on the current task, not permission to add new process or requirements.
 - For code review, lead with actionable findings ordered by severity and include file/line references when available.
 - For plan review, return the revised plan plus the specific risks or assumptions that changed.
 - If the panel finds no material issue, say so and name the residual risk or test gap.
@@ -144,5 +153,6 @@ Prefer fewer high-signal findings over broad commentary. Skip nits unless they c
 - Do not let subagents vote on truth. Evidence beats consensus.
 - Do not spawn multiple agents with the same role unless the artifact is large enough to shard by area.
 - Do not leak secrets, credentials, private user content, or unrelated repository context into subagent prompts.
+- Do not let stance labels become theater. They should change attention, not voice.
 - Do not let reviewer imagination turn into scope creep. Roles are lenses, not product requirements.
 - Do not let the review become theater. A useful crucible produces decisions, not just opinions.
