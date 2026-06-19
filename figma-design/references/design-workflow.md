@@ -35,7 +35,8 @@ counterAxisAlignItems: 'CENTER'
 paddingTop/Right/Bottom/Left: 0
 itemSpacing: 0
 layoutSizingHorizontal: 'FIXED'
-layoutSizingVertical: 'FIXED'
+layoutSizingVertical: 'HUG'   -- height grows with content (scrollable page)
+                               -- use 'FIXED' only for fixed-viewport designs (e.g., splash screens)
 ```
 
 **3. Build the header section**
@@ -179,7 +180,7 @@ create_design_system_rules → generates a rules file with:
 **3. Get component code**
 ```
 get_design_context → returns React+Tailwind (or other framework) code
-get_code_connect_map → maps Figma components to codebase components
+get_code_connect_map → maps Figma components to codebase components (remote MCP only)
 ```
 
 ### From Community MCP (figma-console-mcp)
@@ -272,7 +273,7 @@ const buttonSet = figma.combineAsVariants([button, secondary], parent)
 1. `get_metadata` on the page → understand full structure
 2. `get_design_context` on each major section
 3. `get_variable_defs` for consistent token usage
-4. `get_code_connect_map` to use existing component mappings
+4. `get_code_connect_map` (remote MCP only) to use existing component mappings
 5. Generate code that uses the project's actual components
 
 ### Tips for Better Code Output

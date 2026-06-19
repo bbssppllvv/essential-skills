@@ -12,30 +12,26 @@
 
 ## 1. Official Figma MCP Server
 
-Two variants — Remote (cloud-hosted) and Desktop (local).
+Two variants — Remote/OAuth (cloud-hosted) and Desktop/local. Figma's May 20, 2026 Design Agent launch does not make the REST API the main agent surface. For external coding agents, use official Figma MCP tools, especially `use_figma` for write-to-canvas Plugin API execution and `generate_figma_design` for prompt/code-to-canvas generation.
 
-### All 13 Official Tools
+### Official tool groups
 
-| # | Tool | Read/Write | Remote | Desktop | Description |
-|---|---|---|---|---|---|
-| 1 | `get_design_context` | Read | Yes | Yes | Returns code (React+Tailwind default) + screenshot + metadata |
-| 2 | `get_metadata` | Read | Yes | Yes | Sparse XML tree — IDs, types, names, positions, sizes |
-| 3 | `get_screenshot` | Read | Yes | Yes | Screenshot of a node or selection |
-| 4 | `get_variable_defs` | Read | Yes | Yes | Design token values (colors, spacing, typography) |
-| 5 | `get_code_connect_map` | Read | Yes | No | Figma node → code component mappings |
-| 6 | `get_code_connect_suggestions` | Read | Yes | No | Auto-detected component mappings |
-| 7 | `get_figjam` | Read | Yes | Yes | FigJam board content in XML |
-| 8 | `create_design_system_rules` | Read* | Yes | Yes | Generates design system ruleset |
-| 9 | `generate_figma_design` | **Write** | **Yes** | No | Sends live UI screenshots as design layers |
-| 10 | `generate_diagram` | **Write** | Yes | No | Creates FigJam diagram from Mermaid syntax |
-| 11 | `add_code_connect_map` | **Write** | Yes | No | Creates node → code mappings |
-| 12 | `send_code_connect_mappings` | **Write** | Yes | No | Confirms detected mappings |
-| 13 | `whoami` | Read | **Yes** | No | User identity and plan info |
+Tool availability changes by deployment and plan, so prefer capability groups over a frozen count:
 
-*`create_design_system_rules` creates a rules file, not design nodes.
+- `get_design_context` — primary design-to-code read path. Returns structured design data and usually React/Tailwind-style reference code.
+- `get_metadata` — sparse node outline for targeting large files or avoiding oversized context.
+- `get_screenshot` — visual reference for parity checks.
+- `get_variable_defs` — variables/styles used by a selection.
+- `search_design_system` and library tools — discover reusable components, variables, styles, and libraries before recreating design-system assets.
+- `use_figma` — **write-to-canvas** and exact file-context read path. Executes Plugin API JavaScript in the Figma file context. Use for creating/editing nodes, variables, styles, components, variants, and bulk mutations.
+- `generate_figma_design` — creates editable Figma design layers from a prompt or code-oriented screen/page description.
+- `get_figjam` and `generate_diagram` — FigJam read and diagram creation workflows.
+- Code Connect tools such as `get_code_connect_map`, `add_code_connect_map`, and mapping strategy/response tools — connect Figma nodes to code components.
+- `upload_assets`, `create_new_file`, and `whoami` where supported — asset upload, file creation, and account/plan checks.
+- `create_design_system_rules` — generates design-to-code guidance files, not design nodes.
 
 ### Key Limitation
-`generate_figma_design` is the only tool that creates visual content on canvas, but it works by **capturing screenshots of running web UIs** and converting them to Figma layers — it does NOT create designs from scratch or edit existing ones. There is no official MCP tool for creating/editing individual design nodes.
+Do not confuse the built-in Figma Design Agent with API access. The built-in agent is a product feature inside Figma Design. External agents should use Figma MCP. For fine-grained node edits, use `use_figma`; for generated editable screens, use `generate_figma_design`; for file metadata/admin/export workflows, use REST API.
 
 ### Desktop MCP Parameters
 

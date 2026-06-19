@@ -5,8 +5,12 @@
 - [Architecture Patterns](#architecture-patterns)
 - [Vercel AI SDK](#vercel-ai-sdk)
 - [TanStack AI SDK](#tanstack-ai-sdk)
+- [LiveKit](#livekit)
+- [Pipecat](#pipecat)
+- [LangChain](#langchain)
 - [Twilio Integration](#twilio-integration)
 - [n8n Integration](#n8n-integration)
+- [Community Integrations](#community-integrations)
 - [Data Residency](#data-residency)
 - [Security and Compliance](#security-and-compliance)
 - [AI Engineering](#ai-engineering)
@@ -154,13 +158,72 @@ const rawTokens = (result as any).providerMetadata?.soniox?.tokens;
 
 ---
 
+## LiveKit
+
+**Package:** `livekit-plugins-soniox` (PyPI). Use when building LiveKit Agents that need Soniox STT.
+
+```bash
+pip install "livekit-agents[soniox]" livekit-plugins-soniox
+```
+
+```python
+from livekit.agents import AgentSession
+from livekit.plugins import soniox
+
+session = AgentSession(
+    stt=soniox.STT(model="stt-rt-v4", language_hints=["en"]),
+    # llm=..., tts=...
+)
+```
+
+Docs: https://soniox.com/docs/integrations/livekit
+
+---
+
+## Pipecat
+
+**Package:** `pipecat-ai[soniox]`. Provides `SonioxSTTService` for the Pipecat voice-pipeline framework.
+
+```bash
+pip install "pipecat-ai[soniox]"
+```
+
+```python
+from pipecat.services.soniox.stt import SonioxSTTService
+
+stt = SonioxSTTService(api_key=os.environ["SONIOX_API_KEY"], model="stt-rt-v4")
+```
+
+Docs: https://soniox.com/docs/integrations/pipecat
+
+---
+
+## LangChain
+
+Two official packages:
+- **Python:** `langchain-soniox` — `SonioxDocumentLoader` for batch transcription into LangChain `Document`s.
+- **JavaScript/TypeScript:** see `https://soniox.com/docs/integrations/langchain/langchain-js`.
+
+```bash
+pip install langchain-soniox
+```
+
+```python
+from langchain_soniox import SonioxDocumentLoader
+
+loader = SonioxDocumentLoader(file_path="meeting.mp3", enable_speaker_diarization=True)
+docs = loader.load()
+```
+
+This is async/batch transcription. For real-time, use the WebSocket API or LiveKit/Pipecat.
+
+---
+
 ## Twilio Integration
 
 Stream live phone call audio to Soniox. Architecture: Twilio --> Media Stream WebSocket --> Your Server --> Soniox WebSocket.
 
-```bash
-git clone https://github.com/soniox/soniox-twilio-realtime-transcription.git
-```
+A working reference is `apps/soniox-voice-bot-demo/twilio/` inside `https://github.com/soniox/soniox_examples` (Python + Dockerfile + README). The standalone `soniox-twilio-realtime-transcription` repo has historically also existed; check the current docs at `https://soniox.com/docs/integrations/` for the canonical link before pinning.
 
 **TwiML:**
 ```xml
@@ -189,6 +252,16 @@ Install in n8n: Settings > Community Nodes > `@soniox/n8n-nodes-soniox`
 | **Delete** | Delete transcription + file |
 
 Features: polling mode, webhook mode, auto-delete, language hints, diarization, context, translation.
+
+---
+
+## Community Integrations
+
+Listed at `https://soniox.com/docs/integrations/community-integrations`:
+- **Agent Voice Response (AVR)** — Asterisk PBX bridge.
+- **Unofficial Go SDK** — community-maintained Go bindings.
+
+These are not first-party — verify maintenance status before relying on them in production.
 
 ---
 

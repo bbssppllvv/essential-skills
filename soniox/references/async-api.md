@@ -117,7 +117,9 @@ Key fields:
 }
 ```
 
-Status values: `pending`, `processing`, `completed`, `error`.
+Status values: `queued` (initial), `processing`, `completed`, `error`.
+
+The full transcription object also returns `created_at`, `model`, `filename`, `audio_duration_ms`, `error_type`, `language_hints`, `enable_speaker_diarization`, `enable_language_identification` — `id`/`status`/`error_message` is just a minimal projection.
 
 ### Get Transcript
 
@@ -346,7 +348,7 @@ Key async models:
 |-----------------------|------------------------------|-----------------|
 | `stt-async-v4`       | Latest async (recommended)   | -               |
 | `stt-async-v3`       | Previous stable async        | -               |
-| `stt-async-preview`  | Preview alias                | `stt-async-v3`  |
+| `stt-async-preview-v1` | Preview alias              | `stt-async-v3`  |
 
 Filter by `transcription_mode: "async"` to find async-capable models.
 

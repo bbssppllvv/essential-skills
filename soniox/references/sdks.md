@@ -2,11 +2,13 @@
 
 ## Table of Contents
 
-- [Python SDK](#python-sdk)
-- [Node SDK](#node-sdk)
-- [Web SDK](#web-sdk)
-- [React SDK](#react-sdk)
-- [React Native SDK](#react-native-sdk)
+- [Python SDK](#python-sdk) — `soniox`
+- [Node SDK](#node-sdk) — `@soniox/node`
+- [Web SDK](#web-sdk) — `@soniox/speech-to-text-web` (legacy) / `@soniox/client` (new)
+- [React + React Native SDK](#react--react-native-sdk) — `@soniox/react`
+- [Other Official SDKs](#other-official-sdks)
+- [Error Classes](#error-classes)
+- [Reconnection](#reconnection)
 
 ---
 
@@ -15,9 +17,11 @@
 ### Installation
 
 ```bash
-pip install soniox
+pip install soniox   # current: 2.3.0 (2026-04-23)
 export SONIOX_API_KEY=<YOUR_API_KEY>
 ```
+
+Region overrides (also available in Node): `SONIOX_REGION=eu|jp`, or full overrides `SONIOX_BASE_DOMAIN`, `SONIOX_API_BASE_URL`, `SONIOX_WS_URL`, `SONIOX_TTS_API_URL`, `SONIOX_TTS_WS_URL`.
 
 ### Client Initialization
 
@@ -33,7 +37,7 @@ from soniox import AsyncSonioxClient
 client = AsyncSonioxClient()
 ```
 
-Both expose identical APIs (`files`, `models`, `auth`, `webhooks`, `transcriptions`, `realtime`). Async requires `await`.
+Both expose identical namespaces (`stt`, `tts`, `files`, `models`, `auth`, `webhooks`, `realtime`). Async requires `await`.
 
 ### Real-Time Transcription
 
@@ -123,43 +127,72 @@ print(key.api_key, key.expires_at)
 
 ### Async Transcription
 
+In SDK v2.x the namespace is `client.stt` (the older `client.transcriptions` namespace was removed):
+
 ```python
 from soniox import SonioxClient
 client = SonioxClient()
 
 # From local file
-t = client.transcriptions.transcribe(model="stt-async-v4", file="audio.mp3")
+t = client.stt.transcribe(model="stt-async-v4", file="audio.mp3")
 
 # From URL
-t = client.transcriptions.transcribe(
+t = client.stt.transcribe(
     model="stt-async-v4",
     audio_url="https://soniox.com/media/examples/coffee_shop.mp3",
 )
 
 # From uploaded file_id
-t = client.transcriptions.transcribe(model="stt-async-v4", file_id="uploaded-file-id")
+t = client.stt.transcribe(model="stt-async-v4", file_id="uploaded-file-id")
 
 # Poll, wait, retrieve
-t = client.transcriptions.get("transcription-id")
-client.transcriptions.wait("transcription-id")
-transcript = client.transcriptions.get_transcript("transcription-id")
+t = client.stt.get("transcription-id")
+client.stt.wait("transcription-id")
+transcript = client.stt.get_transcript("transcription-id")
 print(transcript.text)
 ```
 
 **List (paginated):**
 ```python
-response = client.transcriptions.list(limit=100)
+response = client.stt.list(limit=100)
 for t in response.transcriptions:
     print(t.id, t.status)
 while response.next_page_cursor:
-    response = client.transcriptions.list(limit=100, cursor=response.next_page_cursor)
+    response = client.stt.list(limit=100, cursor=response.next_page_cursor)
 ```
 
 **Delete:**
 ```python
-client.transcriptions.delete("transcription-id")
-client.transcriptions.destroy("transcription-id")  # + its uploaded file
-client.transcriptions.delete_all()
+client.stt.delete("transcription-id")
+client.stt.destroy("transcription-id")  # + its uploaded file
+client.stt.delete_all()
+```
+
+### TTS
+
+REST one-shot:
+```python
+client.tts.generate_to_file(
+    text="Hello there.",
+    voice="Adrian",
+    language="en",
+    audio_format="mp3",
+    output_path="hello.mp3",
+)
+```
+
+Real-time streaming TTS (`tts-rt-v1-preview`):
+```python
+from soniox.types import RealtimeTTSConfig
+
+with client.realtime.tts.connect(
+    config=RealtimeTTSConfig(model="tts-rt-v1-preview", voice="Adrian", language="en",
+                             audio_format="pcm_s16le", sample_rate=24000)
+) as session:
+    session.send_text("Hello, ", text_end=False)
+    session.send_text("how are you?", text_end=True)
+    for event in session.receive_events():
+        play(event.audio)  # raw bytes
 ```
 
 ### Webhook Handling
@@ -229,7 +262,7 @@ client.files.delete_all()
 ### Installation
 
 ```bash
-npm install @soniox/node
+npm install @soniox/node   # current: 2.0.0 (2026-04-23)
 export SONIOX_API_KEY=<YOUR_API_KEY>
 ```
 
@@ -238,6 +271,8 @@ export SONIOX_API_KEY=<YOUR_API_KEY>
 ```ts
 import { SonioxNodeClient } from "@soniox/node";
 const client = new SonioxNodeClient();
+// Or with explicit options (note: snake_case keys):
+const client2 = new SonioxNodeClient({ api_key: process.env.SONIOX_API_KEY });
 ```
 
 ### Real-Time Transcription
@@ -282,10 +317,16 @@ console.log(transcription.transcript?.text);
 
 ## Web SDK
 
+Soniox now ships **two** browser-capable SDKs:
+- `@soniox/speech-to-text-web` — current STT-only browser SDK (1.4.0, 2026-01-13). Stable, recommended for STT-only browser apps.
+- `@soniox/client` — newer unified browser/RN core (2.0.0, 2026-04-23). Same `SonioxClient` surface, snake_case option keys, also exposes `client.tts` for REST TTS. This is the base used by `@soniox/react`.
+
 ### Installation
 
 ```bash
-npm install @soniox/speech-to-text-web
+npm install @soniox/speech-to-text-web   # legacy/STT-only
+# OR
+npm install @soniox/client                # newer, includes TTS
 ```
 
 CDN:
@@ -363,14 +404,28 @@ audioElement.play();
 
 ---
 
-## React SDK
+## React + React Native SDK
 
-Package: `@soniox/react` (released February 2026)
-Provides React hooks for real-time transcription integration.
+Package: `@soniox/react` — current version 2.0.0 (2026-04-23). One package, both worlds: React, Next.js, **and React Native**. Built on top of `@soniox/client`.
+
+```bash
+npm install @soniox/react
+```
+
+There is **no separate `@soniox/react-native` package** — `@soniox/react` covers it. (The npm registry returns 404 for `@soniox/react-native` as of 2026-04-25.)
 
 ---
 
-## React Native SDK
+## Other Official SDKs
 
-Package: `@soniox/react-native` (released February 2026)
-Enables on-device speech-to-text in React Native applications.
+- **C# / .NET** — `github.com/soniox/soniox_csharp`. Older API surface; treat as legacy.
+- No first-party SDK exists (as of 2026-04-25) for **Go, Rust, Java, or Swift**. Use raw WebSocket/REST.
+
+## Error Classes
+
+- Python: `SonioxApiError`, `SonioxRealtimeError`, `InvalidWebhookSignatureError`.
+- Node / `@soniox/client`: `SonioxHttpError`, `SonioxRealtimeError`.
+
+## Reconnection
+
+The SDKs do **not** auto-reconnect on dropped WebSockets. If you need long-lived sessions, wrap `connect()` in your own retry loop and re-send the start config.

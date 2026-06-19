@@ -92,7 +92,7 @@ First message must be a JSON text frame:
 }
 ```
 
-Max context length: 10,000 characters.
+Max context: **8,000 tokens (~10,000 characters)**.
 
 ---
 
@@ -285,6 +285,7 @@ Send when not streaming audio to prevent timeout:
 - Send at least every **20 seconds** when idle
 - 5-10 second interval recommended
 - Session context preserved across keepalives
+- **Billing note:** real-time STT charges for full stream duration, not just audio processed — long keepalive gaps still accrue cost. Close the connection when idle if you don't need to preserve context.
 
 ---
 

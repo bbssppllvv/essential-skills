@@ -1,22 +1,31 @@
 ---
 name: figma-design
 description: >
-  Comprehensive guide for AI agents designing in Figma — reading designs, creating new UI,
-  and editing existing designs programmatically. Covers the official Figma MCP server (13 tools,
-  mostly read-only), the Figma Plugin API (full read/write, 37+ node types), the REST API
-  (read-only for design data), and community MCP servers that enable full write capabilities
-  via WebSocket + Plugin API bridge (up to 57+ tools).
-  Use this skill whenever: working with Figma files or designs, doing Figma-to-code, creating
-  or editing designs in Figma programmatically, setting up Figma MCP servers, building Figma
-  plugins for AI-driven design, extracting design tokens or variables from Figma, comparing
-  Figma capabilities with Paper or Pencil, or any task involving figma.com, Figma Desktop,
-  Figma Plugin API, or Figma REST API. Also triggers on: mcp__figma-desktop__, figma MCP,
-  design-to-code from Figma, Figma AI plugin, Figma design system, Figma variables.
+  Comprehensive Figma guide for AI agents working with design files, design-to-code,
+  canvas automation, Plugin API scripts, MCP tools, variables, components, effects,
+  CSS Grid, REST API, Code Connect, and design-system extraction. Use when reading,
+  creating, editing, or validating Figma designs; building Figma plugins or scripts;
+  setting up official/community Figma MCP servers; comparing Figma capabilities with
+  Paper or Pencil; or handling Figma Design Agent, figma.com, Figma Desktop, Figma
+  REST API, webhooks, Slides, Buzz, codegen, or design token workflows.
 ---
 
 # Figma Design — AI Agent Skill
 
-This skill equips you to work with Figma as a design tool at a level comparable to Paper and Pencil MCP integrations. The core challenge: Figma's official MCP is primarily read-only for design nodes — you can inspect designs but not create or edit them directly. This skill teaches you the full landscape and the practical paths to full design capabilities.
+This skill equips you to work with Figma as a design tool at a level comparable to Paper and Pencil MCP integrations. The core challenge: Figma has multiple overlapping surfaces — built-in Design Agent, official MCP tools, `use_figma` write-to-canvas, REST API, and Plugin API — with different capability boundaries. This skill teaches the full landscape and the practical paths to full design capabilities.
+
+## May 2026 Agent/Canvas Update
+
+Figma's May 20, 2026 Design Agent launch adds an in-product agent on the Figma canvas. Do **not** treat this as a broad REST API expansion. For external coding agents, the relevant automation surface is **Figma MCP Server + `use_figma` + Plugin API**.
+
+Use the layers this way:
+
+- **Built-in Figma Design Agent**: product feature inside Figma Design for canvas prompting, edits, feedback, and design-system-aware work.
+- **Figma MCP read tools**: `get_design_context`, `get_metadata`, `get_screenshot`, `get_variable_defs`, and design-system discovery for design-to-code, inspection, and validation.
+- **`use_figma` / write-to-canvas**: Plugin API JavaScript in the file context for node creation/mutation, variables, styles, components, variants, exact file-context reads, and bulk edits. Load the `figma-use` guidance before writing scripts.
+- **`generate_figma_design`**: prompt-to-canvas or code-to-canvas generation of editable Figma layers, followed by screenshot/metadata validation and targeted refinement.
+- **Code Connect tools**: map Figma components to code components and improve component reuse during implementation.
+- **REST API**: file/project/team metadata, exports, comments, versions, webhooks, and governance/admin workflows. Do not expect REST to expose full canvas authoring.
 
 ## Architecture Overview
 
@@ -26,30 +35,35 @@ Figma exposes three API surfaces with very different capabilities:
 |---|---|---|---|
 | **REST API** | Full file tree, all properties | No (only comments, variables*, dev resources) | No |
 | **Plugin API** | Full file tree, all properties | Yes — full CRUD on all 37+ node types | Yes (runs inside Figma) |
-| **Official MCP** | Design context, screenshots, metadata, variables | Limited (`generate_figma_design` sends live UI) | Desktop: yes, Remote: no |
+| **Official MCP** | Design context, screenshots, metadata, variables, Code Connect, design-system search | Yes via `use_figma`, `generate_figma_design`, diagram generation, and Code Connect writes where available | Depends on tool: Desktop/local for file-context operations; Remote for OAuth-backed cloud workflows |
 
 *Variables write requires Enterprise plan.
 
-The **Plugin API** is the only path to full design editing power. Every community MCP server that offers write capabilities works by bridging the Plugin API to external tools via WebSocket.
+The **Plugin API** remains the path to full fine-grained design editing power. Official `use_figma` exposes that path to external agents through Figma MCP; community MCP servers often do the same through WebSocket + plugin bridges.
 
 ## What Tools Are Available?
 
-### If you have `mcp__figma-desktop__*` tools
+### If you have official Figma MCP tools
 
-You have Figma's **official desktop MCP**. 6 tools, all read-only:
+You have Figma's official MCP surface. Tool availability varies between Desktop/local and Remote/OAuth deployments, but the practical groups are:
 
-- `get_design_context` — Primary tool. Returns code (React+Tailwind default) + screenshot + metadata for a node
-- `get_metadata` — Sparse XML tree (IDs, types, names, positions, sizes)
-- `get_screenshot` — Screenshot of a node
-- `get_variable_defs` — Design token values (colors, spacing, typography)
-- `get_figjam` — FigJam board content
-- `create_design_system_rules` — Generates design system ruleset for agent context
+- `get_design_context` — primary design-to-code tool. Returns structured design data and usually code representation.
+- `get_metadata` — sparse node map for large designs and targeted follow-up calls.
+- `get_screenshot` — visual reference for parity checks.
+- `get_variable_defs` — variables/styles used in the selection.
+- `search_design_system` / library tools — discover reusable components, variables, styles, and libraries before recreating them.
+- `use_figma` — write-to-canvas and exact file-context read path via Plugin API JavaScript. Load `figma-use` guidance first.
+- `generate_figma_design` — generate editable design layers from prompts or code-oriented screen descriptions.
+- `get_figjam` / `generate_diagram` — FigJam read and diagram creation workflows.
+- Code Connect tools — read/add mappings between Figma nodes and code components.
+- `create_design_system_rules` — generates project-specific design-to-code guidance.
+- `whoami` — authenticated user identity/plan information where supported.
 
-These are powerful for **reading and understanding** designs. Use `get_design_context` as your primary inspection tool — it returns framework-specific code you can adapt.
+Use `get_design_context` as the primary inspection tool, then validate visually with `get_screenshot`. Use `use_figma` only when you need Plugin API execution in the file context.
 
-### If you have community write tools (e.g., figma-console-mcp)
+### If you have `use_figma` or community write tools
 
-You have full read/write access. See `references/mcp-ecosystem.md` for the complete tool catalog. Key write operations:
+You have Plugin API-backed read/write access. See `references/mcp-ecosystem.md` for details. Key write operations:
 - Create frames, rectangles, ellipses, text, vectors, components
 - Modify fills, strokes, effects, auto layout, text content
 - Manage variables, styles, and design tokens
@@ -97,8 +111,15 @@ For creating or editing designs, you need write-capable tools — either through
 - `layoutMode: 'VERTICAL'` → `flex-direction: column`
 - `primaryAxisAlignItems: 'SPACE_BETWEEN'` → `justify-content: space-between`
 - `counterAxisAlignItems: 'CENTER'` → `align-items: center`
-- `layoutSizingHorizontal: 'FILL'` → `flex: 1` (fill parent)
-- `layoutSizingHorizontal: 'HUG'` → `width: fit-content`
+- `layoutSizingHorizontal/Vertical` — `'FIXED' | 'HUG' | 'FILL'` (preferred shorthand API)
+  - `'HUG'` — only valid on auto-layout frames and text nodes (container shrinks to fit content)
+  - `'FILL'` — only valid on direct children of auto-layout frames (child expands to fill parent)
+  - `'FIXED'` — explicit size, always valid
+- For artboards: use `layoutSizingVertical: 'HUG'` so height grows with content
+- `layoutWrap: 'WRAP'` — only on HORIZONTAL frames
+- `minWidth`/`maxWidth`/`minHeight`/`maxHeight` — only on auto-layout frames and their children, must apply AFTER `appendChild()`
+
+See `references/plugin-api.md` section 7 for the complete auto layout reference including three API layers, old-to-new mapping tables, sizing patterns, and ordering requirements.
 
 **Text requires font loading** — before setting `.characters`, `.fontSize`, or `.fontName`, you must call `figma.loadFontAsync()`. This is a common gotcha.
 
@@ -136,13 +157,17 @@ These principles apply regardless of which tools you're using:
 
 Read these for deep dives on specific topics:
 
-- `references/plugin-api.md` — Full Plugin API capabilities: node types, properties, creation methods, auto layout, variables, components, text, vectors, effects, styles, events. Read when building a Plugin or using write-capable MCP tools that expose Plugin API operations.
+- `references/plugin-api.md` — Core Plugin API: 33 SceneNode types, creation methods, properties, 6 effect types, 5 paint types, auto layout + CSS Grid, variables, components, text, vectors, prototyping (with spring easing), styles, events. Updated for @figma/plugin-typings v1.123.0.
 
-- `references/mcp-ecosystem.md` — Complete catalog of official MCP tools (13) and community servers (figma-console-mcp with 57+ tools, cursor-talk-to-figma-mcp, etc.). Setup instructions, architecture diagrams, comparison table. Read when setting up Figma MCP or choosing which server to use.
+- `references/new-effects-paints.md` — **NEW** Deep reference for 2025 beta features: Glass effect, Progressive Blur, Noise (3 subtypes), Texture, Pattern Paint. Full TypeScript types, code examples, gotchas, effect limits per layer, timeline of API changes.
 
-- `references/design-workflow.md` — Step-by-step workflows for common design tasks: creating a page from scratch, editing existing designs, extracting design systems, building components. Read when performing specific design tasks.
+- `references/advanced-apis.md` — **NEW** 21 sections covering: CSS Grid layout, Annotations, Dev Resources, Measurements, Codegen plugins, Payments API, Team Library, Extended Variable Collections, Slides API, Buzz API, Draw APIs (TextPath, TransformGroup), JSX node creation, script execution & runtime, data storage, dynamic page loading, new text features, new prototyping features, new node types, deprecations & breaking changes (sync→async migration guide), REST API additions, webhooks.
 
-- `references/gap-analysis.md` — Detailed comparison of Figma vs Paper vs Pencil capabilities, organized by category (read, write, edit, delete, workflow, design systems, AI features). Read when evaluating what's possible in Figma vs other tools or when planning what a custom plugin needs to implement.
+- `references/mcp-ecosystem.md` — Complete catalog of official MCP tools (13) and community servers (figma-console-mcp with 57+ tools, cursor-talk-to-figma-mcp, etc.). Setup instructions, architecture diagrams, comparison table.
+
+- `references/design-workflow.md` — Step-by-step workflows for common design tasks: creating a page from scratch, editing existing designs, extracting design systems, building components.
+
+- `references/gap-analysis.md` — Figma vs Paper vs Pencil capability comparison across read, write, edit, delete, workflow, design systems, and AI features.
 
 ## Common Patterns
 
