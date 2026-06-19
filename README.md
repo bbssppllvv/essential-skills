@@ -13,6 +13,7 @@ A collection of Claude Code skills — modular reference packages for AI-assiste
 | [soniox](soniox/) | Soniox speech-to-text API — real-time WebSocket streaming, async REST transcription, Python/Node/Web SDKs. |
 | [product-design](product-design/) | Product design best practices — typography, color, spacing, motion, icons, accessibility, anti-AI-slop. |
 | [vercel-ai](vercel-ai/) | Vercel AI ecosystem — AI SDK v6, AI Elements (48 components), Chat SDK, Workflow DevKit, AI Gateway, Streamdown, Data Stream Protocol. |
+| [crucible](crucible/) | Independent multi-perspective subagent review panels for high-risk plans, PRs, decisions, and debugging. |
 
 ## Usage
 
