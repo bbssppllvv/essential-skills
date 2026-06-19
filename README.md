@@ -6,6 +6,7 @@ A collection of Claude Code skills — modular reference packages for AI-assiste
 
 | Skill | Description |
 |-------|-------------|
+| [agent-engineering](agent-engineering/) | Production-grade AI agents, harnesses, tool loops, evals, permissions, multi-agent patterns, and runbooks. |
 | [openrouter](openrouter/) | Complete OpenRouter API documentation (178 pages). Routing, models, SDKs, integrations. |
 | [figma-design](figma-design/) | Figma MCP, Plugin API, REST API, design-to-code, canvas automation, and AI design workflows. |
 | [fluidaudio](fluidaudio/) | FluidAudio Swift SDK for on-device audio AI on Apple platforms. ASR (Parakeet TDT), diarization, VAD, TTS via CoreML/ANE. |
