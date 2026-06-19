@@ -79,6 +79,15 @@ Choose roles that create useful tension. Stances are attention anchors, not fict
 | Scope Sentinel | The Gatekeeper | Reviewers may turn a bounded task into a wishlist, redesign, or speculative roadmap. |
 | Domain Specialist | The Specialist | A specific domain is central, such as Swift/macOS, payments, AI agents, SEO, legal, or data systems. Name the domain in the prompt. |
 
+Custom one-off reviewers:
+
+- Create a custom reviewer when the catalog misses a material perspective for the artifact in front of you.
+- Ask: "What failure mode or tradeoff would this reviewer uniquely catch?" If the answer is vague, use a catalog role instead.
+- Define the custom reviewer before spawning: `Role`, optional `Stance`, one-sentence mandate, and explicit non-goals.
+- Count custom reviewers toward the panel size limit. Prefer at most one custom reviewer; use two only when the artifact has two genuinely distinct uncataloged risks.
+- Do not create custom reviewers for flavor, entertainment, duplicate coverage, or speculative future concerns.
+- Keep custom roles behavior-first. A good custom role sounds like `Migration Skeptic`, `Billing Edge-Case Reviewer`, or `First-Run User`, not a fictional character biography.
+
 Default panels:
 
 - PR review: Correctness Hunter, Regression Hunter, Test/QA Reviewer.
@@ -97,7 +106,7 @@ Use `Domain Specialist` only when the required specialty is explicit and materia
 2. Decide whether independent perspectives are likely to change the answer, plan, review, or implementation.
 3. Define the artifact under review: diff, files, plan, logs, screenshot, design, diagnosis, or proposal.
 4. Minimize context before delegation: prefer diffs, excerpts, file paths, screenshots, or logs with secrets and irrelevant private content removed. State what reviewers may inspect and what was withheld.
-5. Select 1-5 roles based on the risks and unknowns that matter most.
+5. Select 1-5 catalog or custom roles based on the risks and unknowns that matter most. For each custom role, write its mandate and non-goals before spawning.
 6. Spawn independent subagents. If subagent tools are not already available, make one bounded search for multi-agent tools.
 7. If true subagents are unavailable, do not claim independent review happened. Either proceed with a clearly labeled single-agent structured review, or report the blocker if the user explicitly required spawned agents.
 8. Give each subagent the same minimized artifact package and one role-specific mandate. Do not give subagents each other's outputs.
@@ -115,6 +124,7 @@ You are the [ROLE] ([STANCE, optional]) in a crucible review.
 Task: [what is being reviewed and why]
 Artifact: [diff/files/plan/logs/screenshot/etc.]
 Allowed inspection scope: [whether the reviewer may inspect files beyond the artifact]
+Role mandate: [for custom roles, state the exact perspective and non-goals; otherwise omit]
 
 Review only from your assigned perspective. Be sharp but evidence-based.
 Use the stance only as an attention lens. Do not roleplay, add personality flourishes, jokes, lore, or theatrical framing.
