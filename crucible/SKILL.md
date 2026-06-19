@@ -21,6 +21,14 @@ Core rule: subagents are advisors, not authorities. Verify every claim against s
 
 Recursion guard: when acting as a Crucible reviewer or subagent, do not invoke Crucible or spawn additional reviewers. Run at most one Crucible panel per top-level task unless the user explicitly asks for nested review.
 
+## Operating Model
+
+- The main agent is the planner, integrator, and decision-maker.
+- Reviewers are sidecars. They do not coordinate with each other, negotiate scope, or create new requirements.
+- Keep the critical path local. Do not delegate the decision itself, integration, or work whose result is needed before the next immediate local step.
+- Spawn only concrete, bounded review tasks that can run independently and materially improve the outcome.
+- Stop spawning once the remaining work is sequential, small, or integration-heavy. Finish locally.
+
 ## Invocation Model
 
 Use this skill based on expected value, not task labels. The question is:
@@ -103,6 +111,7 @@ Allowed inspection scope: [whether the reviewer may inspect files beyond the art
 
 Review only from your assigned perspective. Be sharp but evidence-based.
 Do not invoke Crucible, spawn subagents, or perform a second-level panel review.
+Do not expand the project scope. Do not propose optional enhancements, rewrites, redesigns, speculative future work, or nice-to-haves unless they materially affect the stated goal.
 
 Return:
 - Findings: severity, evidence, confidence, and recommended action.
@@ -110,8 +119,9 @@ Return:
 - Scope you intentionally did not review.
 
 Use severity Critical/High/Medium/Low. Evidence must be a file:line reference, exact artifact excerpt, command output, screenshot region, or "not evidenced." Confidence must be High/Medium/Low.
+Make the handoff usable without reading your full transcript.
 
-Prefer fewer high-signal findings over broad commentary. Do not assume facts not present in the artifact.
+Prefer fewer high-signal findings over broad commentary. Skip nits unless they change correctness, user trust, maintainability, verification confidence, or delivery risk. Do not assume facts not present in the artifact.
 ```
 
 ## Synthesis Rules
@@ -120,7 +130,10 @@ Prefer fewer high-signal findings over broad commentary. Do not assume facts not
 - Keep good disagreement visible; do not average it away.
 - Reject findings that are vague, unsupported, out of scope, or based on invented context.
 - Track each material finding as accepted, rejected, or unresolved, with a short reason.
-- Convert valid feedback into concrete actions: code changes, plan edits, tests, QA notes, or explicit non-actions.
+- Accept feedback only when it is inside the original goal and materially improves correctness, risk, user value, maintainability, or verification confidence.
+- Convert accepted feedback into concrete actions: code changes, plan edits, tests, QA notes, or explicit non-actions.
+- Park useful but nonessential ideas as follow-up notes; do not silently expand the current task to include them.
+- Do not run another panel just to arbitrate minor disagreements. The main agent decides.
 - For code review, lead with actionable findings ordered by severity and include file/line references when available.
 - For plan review, return the revised plan plus the specific risks or assumptions that changed.
 - If the panel finds no material issue, say so and name the residual risk or test gap.
@@ -131,4 +144,5 @@ Prefer fewer high-signal findings over broad commentary. Do not assume facts not
 - Do not let subagents vote on truth. Evidence beats consensus.
 - Do not spawn multiple agents with the same role unless the artifact is large enough to shard by area.
 - Do not leak secrets, credentials, private user content, or unrelated repository context into subagent prompts.
+- Do not let reviewer imagination turn into scope creep. Roles are lenses, not product requirements.
 - Do not let the review become theater. A useful crucible produces decisions, not just opinions.
